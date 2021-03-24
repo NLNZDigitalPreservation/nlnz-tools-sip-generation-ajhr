@@ -1,75 +1,120 @@
 package nz.govt.natlib.ajhr.proc;
 
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import nz.govt.natlib.ajhr.metadata.MetadataMetProp;
+import nz.govt.natlib.ajhr.metadata.MetadataRetVal;
+import nz.govt.natlib.ajhr.util.LogPrinter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.IOException;
+import java.util.concurrent.Semaphore;
 
 public class MetsFolderScanProcessor {
-    private static final Pattern pattern = Pattern.compile("AJHR_18\\d{2}|19\\d{2}|20\\d{2}_.+");
-
     @Value("${maxThreads}")
     private int maxThreads;
     @Value("${sourceFolder}")
     private String sourceFolder;
     @Value("${targetFolder}")
     private String targetFolder;
+    @Value("${isForcedReloaded}")
+    private boolean isForcedReloaded;
+    @Autowired
+    private MetsTemplateService metsTemplateService;
 
-    private ExecutorService _executor_service;
+    private Semaphore semaphore;
+    private Template metsTemplate;
 
     @PostConstruct
     public void init() {
-        _executor_service = Executors.newFixedThreadPool(maxThreads);
+        semaphore = new Semaphore(maxThreads);
+        try {
+            metsTemplate = metsTemplateService.loadTemplate();
+        } catch (IOException e) {
+            LogPrinter.error(ExceptionUtils.getStackTrace(e));
+        }
     }
 
-
-    public void walkSourceFolder() {
+    public void walkSourceFolder() throws InterruptedException {
         _walkSourceFolder(new File(sourceFolder));
     }
 
-    private void _walkSourceFolder(File directory) {
+    private void _walkSourceFolder(File directory) throws InterruptedException {
         if (!directory.isDirectory()) {
+            LogPrinter.debug("Skipped invalid root directory: " + directory.getAbsolutePath());
             return;
         }
 
         if (isValidRootFolder(directory)) {
+            LogPrinter.debug("Found valid root directory: " + directory.getAbsolutePath());
             listAccrualFolders(directory);
-        } else {
-            File[] subFolders = directory.listFiles();
-            if (subFolders == null) {
-                return;
-            }
-            for (File subFolder : subFolders) {
-                _walkSourceFolder(subFolder);
-            }
+        }
+
+        File[] subFolders = directory.listFiles();
+        if (subFolders == null) {
+            LogPrinter.error("The root directory is empty: " + directory.getAbsolutePath());
+            return;
+        }
+        for (File subFolder : subFolders) {
+            _walkSourceFolder(subFolder);
         }
     }
 
-    private void listAccrualFolders(File directory) {
+    private void listAccrualFolders(File directory) throws InterruptedException {
         File[] subFolders = directory.listFiles();
         if (subFolders == null) {
             return;
         }
         for (File subFolder : subFolders) {
-            MetsGenerationHandler generationProcessor = new MetsGenerationHandler(null, directory, subFolder,null);
-            _executor_service.submit(generationProcessor);
+            if (!subFolder.isDirectory() || !isValidSubFolder(subFolder)) {
+                LogPrinter.error("Skipped invalid subfolder: " + subFolder.getAbsolutePath());
+                continue;
+            }
+
+            //Try to get a token to prevent the concurrent threads not exceed the capacity threshold.
+            semaphore.acquire();
+
+            Thread t = new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        MetadataRetVal retVal = MetadataRetVal.FAILED;
+                        int tryTimes = 3;
+
+                        while (retVal == MetadataRetVal.FAILED && tryTimes > 0) {
+                            try {
+                                tryTimes--;
+                                LogPrinter.debug("Found valid subfolder: " + subFolder.getAbsolutePath());
+                                MetsGenerationHandler generationProcessor = new MetsGenerationHandler(metsTemplate, directory, subFolder, targetFolder, isForcedReloaded);
+                                retVal = generationProcessor.process();
+                            } catch (TemplateException | IOException e) {
+                                LogPrinter.error(ExceptionUtils.getStackTrace(e));
+                            }
+                        }
+
+                        LogPrinter.info(retVal.name() + ": " + subFolder.getAbsolutePath());
+                    } finally {
+                        semaphore.release();
+                    }
+                }
+            });
+            t.start();
         }
     }
 
-    public boolean isValidRootFolder(File directory) {
-        if (!directory.isDirectory()) {
-            return false;
-        }
+    public boolean isValidSubFolder(File directory) {
+        File pmFolder = new File(directory, MetsGenerationHandler.PRESERVATION_MASTER_FOLDER);
+        File mmFolder = new File(directory, MetsGenerationHandler.MODIFIED_MASTER_FOLDER);
 
-        Matcher matcher = pattern.matcher(directory.getName());
-        int matches = 0;
-        while (matcher.find()) {
-            matches++;
-        }
-        return matches > 0;
+        return pmFolder.exists() && pmFolder.isDirectory() && mmFolder.exists() && mmFolder.isDirectory();
+    }
+
+    public boolean isValidRootFolder(File directory) {
+        MetadataMetProp metProp = MetadataMetProp.getInstance(directory.getName(), "");
+        return metProp != null;
     }
 }

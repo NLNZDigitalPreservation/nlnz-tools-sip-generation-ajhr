@@ -4,59 +4,70 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import nz.govt.natlib.ajhr.metadata.MetadataMetProp;
 import nz.govt.natlib.ajhr.metadata.MetadataRetVal;
-import nz.govt.natlib.ajhr.util.LogPrinter;
-import org.apache.commons.lang3.exception.ExceptionUtils;
+import nz.govt.natlib.ajhr.util.PrettyPrinter;
+import org.apache.commons.io.FileUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
+//import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.util.concurrent.Semaphore;
 
+@Service
 public class MetsFolderScanProcessor {
-    @Value("${maxThreads}")
-    private int maxThreads;
-    @Value("${sourceFolder}")
-    private String sourceFolder;
-    @Value("${targetFolder}")
-    private String targetFolder;
-    @Value("${isForcedReloaded}")
-    private boolean isForcedReloaded;
+    private static final Logger log = LoggerFactory.getLogger(MetsFolderScanProcessor.class);
+    private int maxThreads = 1;
+    private String srcDir;
+    private String destDir;
+    private boolean isForcedReplaced;
     @Autowired
     private MetsTemplateService metsTemplateService;
 
     private Semaphore semaphore;
     private Template metsTemplate;
 
-    @PostConstruct
     public void init() {
         semaphore = new Semaphore(maxThreads);
         try {
             metsTemplate = metsTemplateService.loadTemplate();
         } catch (IOException e) {
-            LogPrinter.error(ExceptionUtils.getStackTrace(e));
+            log.error("Failed to generate SIP:", e);
         }
     }
 
-    public void walkSourceFolder() throws InterruptedException {
-        _walkSourceFolder(new File(sourceFolder));
+    public void walkSourceFolder() throws InterruptedException, IOException {
+        if (this.isForcedReplaced) {
+            log.info("Removed all existing contents from: {}", this.destDir);
+
+            File fDestDir = new File(this.destDir);
+            if (fDestDir.exists()) {
+                FileUtils.deleteDirectory(fDestDir);
+            }
+
+            if (!fDestDir.exists() && !fDestDir.mkdirs()) {
+                log.error("Failed to create dest directory");
+                return;
+            }
+        }
+        _walkSourceFolder(new File(srcDir));
     }
 
     private void _walkSourceFolder(File directory) throws InterruptedException {
         if (!directory.isDirectory()) {
-            LogPrinter.debug("Skipped invalid root directory: " + directory.getAbsolutePath());
             return;
         }
 
         if (isValidRootFolder(directory)) {
-            LogPrinter.debug("Found valid root directory: " + directory.getAbsolutePath());
+            log.debug("Found valid root directory: {}", directory.getAbsolutePath());
             listAccrualFolders(directory);
         }
 
         File[] subFolders = directory.listFiles();
         if (subFolders == null) {
-            LogPrinter.error("The root directory is empty: " + directory.getAbsolutePath());
+            log.error("The root directory is empty: {}", directory.getAbsolutePath());
             return;
         }
         for (File subFolder : subFolders) {
@@ -71,7 +82,7 @@ public class MetsFolderScanProcessor {
         }
         for (File subFolder : subFolders) {
             if (!subFolder.isDirectory() || !isValidSubFolder(subFolder)) {
-                LogPrinter.error("Skipped invalid subfolder: " + subFolder.getAbsolutePath());
+                log.error("Skipped invalid subfolder: {}", subFolder.getAbsolutePath());
                 continue;
             }
 
@@ -82,21 +93,21 @@ public class MetsFolderScanProcessor {
                 @Override
                 public void run() {
                     try {
-                        MetadataRetVal retVal = MetadataRetVal.FAILED;
+                        MetadataRetVal retVal = MetadataRetVal.FAIL;
                         int tryTimes = 3;
 
-                        while (retVal == MetadataRetVal.FAILED && tryTimes > 0) {
+                        while (retVal == MetadataRetVal.FAIL && tryTimes > 0) {
                             try {
                                 tryTimes--;
-                                LogPrinter.debug("Found valid subfolder: " + subFolder.getAbsolutePath());
-                                MetsGenerationHandler generationProcessor = new MetsGenerationHandler(metsTemplate, directory, subFolder, targetFolder, isForcedReloaded);
+                                log.debug("Found valid subfolder: {}", subFolder.getAbsolutePath());
+                                MetsGenerationHandler generationProcessor = new MetsGenerationHandler(metsTemplate, directory, subFolder, destDir, isForcedReplaced);
                                 retVal = generationProcessor.process();
                             } catch (TemplateException | IOException e) {
-                                LogPrinter.error(ExceptionUtils.getStackTrace(e));
+                                log.error("Failed to generate SIP for: {}", subFolder.getAbsolutePath(), e);
                             }
                         }
 
-                        LogPrinter.info(retVal.name() + ": " + subFolder.getAbsolutePath());
+                        PrettyPrinter.printResult(retVal, subFolder.getAbsolutePath());
                     } finally {
                         semaphore.release();
                     }
@@ -116,5 +127,37 @@ public class MetsFolderScanProcessor {
     public boolean isValidRootFolder(File directory) {
         MetadataMetProp metProp = MetadataMetProp.getInstance(directory.getName(), "");
         return metProp != null;
+    }
+
+    public int getMaxThreads() {
+        return maxThreads;
+    }
+
+    public void setMaxThreads(int maxThreads) {
+        this.maxThreads = maxThreads;
+    }
+
+    public String getSrcDir() {
+        return srcDir;
+    }
+
+    public void setSrcDir(String srcDir) {
+        this.srcDir = srcDir;
+    }
+
+    public String getDestDir() {
+        return destDir;
+    }
+
+    public void setDestDir(String destDir) {
+        this.destDir = destDir;
+    }
+
+    public boolean isForcedReplaced() {
+        return isForcedReplaced;
+    }
+
+    public void setForcedReplaced(boolean forcedReplaced) {
+        isForcedReplaced = forcedReplaced;
     }
 }

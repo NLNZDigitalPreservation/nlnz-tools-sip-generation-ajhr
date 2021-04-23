@@ -6,8 +6,9 @@ import nz.govt.natlib.ajhr.metadata.MetadataMetProp;
 import nz.govt.natlib.ajhr.metadata.MetadataRetVal;
 import nz.govt.natlib.ajhr.metadata.MetadataSipItem;
 import nz.govt.natlib.ajhr.util.AJHRUtils;
-import nz.govt.natlib.ajhr.util.LogPrinter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ui.ModelMap;
 import org.springframework.util.DigestUtils;
 import org.apache.commons.io.FileUtils;
@@ -18,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MetsGenerationHandler {
+    private static final Logger log = LoggerFactory.getLogger(MetsGenerationHandler.class);
+
     public static final String PRESERVATION_MASTER_FOLDER = "PM_01";
     public static final String MODIFIED_MASTER_FOLDER = "MM_01";
     public static final String READY_FOR_INGESTION_MARK = "ready-for-ingestion-FOLDER-COMPLETED";
@@ -32,23 +35,24 @@ public class MetsGenerationHandler {
     private boolean isForced = false;
 
     public MetsGenerationHandler(Template metTemplate, File rootDirectory, File subFolder, String targetRootLocation, boolean isForced) {
+        String sipFolder = String.format("%s-%s", rootDirectory.getName(), subFolder.getName());
+        this.targetRootLocation = AJHRUtils.combinePath(targetRootLocation, sipFolder);
         this.metTemplate = metTemplate;
         this.rootDirectory = rootDirectory;
         this.subFolder = subFolder;
-        String sipFolder = String.format("%s-%s", this.rootDirectory.getName(), this.subFolder.getName());
-        this.targetRootLocation = AJHRUtils.combinePath(targetRootLocation, sipFolder);
         this.isForced = isForced;
     }
 
     public MetadataRetVal process() throws IOException, TemplateException {
-        File readForIngestionMarkFile = AJHRUtils.combinePath(subFolder, READY_FOR_INGESTION_MARK);
-        if (readForIngestionMarkFile.exists() && !isForced) {
-            LogPrinter.info("Skip " + subFolder.getAbsolutePath());
-            return MetadataRetVal.SKIPPED;
+        File readyForIngestionMarkFile = AJHRUtils.combinePath(targetRootLocation, READY_FOR_INGESTION_MARK);
+        if (readyForIngestionMarkFile.exists() && !isForced) {
+            log.info("Skip {}", subFolder.getAbsolutePath());
+            return MetadataRetVal.SKIP;
         }
 
         //Clean the existing target location
         if (this.targetRootLocation.exists()) {
+            log.debug("Clear the existing folder: {}", this.targetRootLocation.getAbsolutePath());
             FileUtils.deleteDirectory(this.targetRootLocation);
         }
 
@@ -59,14 +63,20 @@ public class MetsGenerationHandler {
         File pmTargetContentStreamFolder = AJHRUtils.combinePath(targetRootLocation, PRESERVATION_MASTER_STREAM_FOLDER);
         retVal = copyDirectory(pmSourceFolder, pmTargetContentStreamFolder);
         if (!retVal) {
-            return MetadataRetVal.FAILED;
+            log.error("Failed to copy folder: {} -> {}", pmSourceFolder.getAbsolutePath(), pmTargetContentStreamFolder.getAbsolutePath());
+            return MetadataRetVal.FAIL;
+        } else {
+            log.debug("Copy folder: {} -> {}", pmSourceFolder.getAbsolutePath(), pmTargetContentStreamFolder.getAbsolutePath());
         }
 
         File mmSourceFolder = AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER);
         File mmTargetContentStreamFolder = AJHRUtils.combinePath(targetRootLocation, MODIFIED_MASTER_STREAM_FOLDER);
         retVal = copyDirectory(mmSourceFolder, mmTargetContentStreamFolder);
         if (!retVal) {
-            return MetadataRetVal.FAILED;
+            log.error("Failed to copy folder: {} -> {}", mmSourceFolder.getAbsolutePath(), mmTargetContentStreamFolder.getAbsolutePath());
+            return MetadataRetVal.FAIL;
+        } else {
+            log.debug("Copy folder: {} -> {}", mmSourceFolder.getAbsolutePath(), mmTargetContentStreamFolder.getAbsolutePath());
         }
 
         //Write mets xml
@@ -78,20 +88,20 @@ public class MetsGenerationHandler {
         FileUtils.writeByteArrayToFile(targetReadyFile, new byte[0]);
 
         //Mark as finished
-        File sourceReadyFile = AJHRUtils.combinePath(this.subFolder, READY_FOR_INGESTION_MARK);
-        FileUtils.writeByteArrayToFile(sourceReadyFile, new byte[0]);
+//        File sourceReadyFile = AJHRUtils.combinePath(this.subFolder, READY_FOR_INGESTION_MARK);
+//        FileUtils.writeByteArrayToFile(sourceReadyFile, new byte[0]);
 
-        return MetadataRetVal.SUCCEED;
+        return MetadataRetVal.SUCC;
     }
 
     public boolean copyDirectory(File sourceDirectory, File targetDirectory) {
         if (!sourceDirectory.exists() || !sourceDirectory.isDirectory()) {
-            LogPrinter.error("The source directory does not exist: " + sourceDirectory.getAbsolutePath());
+            log.error("The source directory does not exist: {}", sourceDirectory.getAbsolutePath());
             return false;
         }
 
         if (targetDirectory.exists() && !sourceDirectory.isDirectory()) {
-            LogPrinter.error("The target directory is not a directory: " + targetDirectory.getAbsolutePath());
+            log.error("The target directory is not a directory: {}", targetDirectory.getAbsolutePath());
             return false;
         }
 
@@ -107,7 +117,7 @@ public class MetsGenerationHandler {
                 FileUtils.copyDirectory(sourceDirectory, targetDirectory);
                 retVal = true;
             } catch (IOException e) {
-                LogPrinter.error(ExceptionUtils.getStackTrace(e));
+                log.error(ExceptionUtils.getStackTrace(e));
             }
         }
         return retVal;
@@ -134,7 +144,7 @@ public class MetsGenerationHandler {
 
         File[] files = directory.listFiles();
         if (files == null) {
-            LogPrinter.error("The directory is empty: " + directory.getAbsolutePath());
+            log.error("The directory is empty: {}", directory.getAbsolutePath());
             throw new IOException("The directory is empty: " + directory.getAbsolutePath());
         }
 
@@ -176,7 +186,7 @@ public class MetsGenerationHandler {
             try {
                 byte[] md5 = DigestUtils.md5Digest(new FileInputStream(f));
                 md5Hex = DigestUtils.md5DigestAsHex(md5);
-                LogPrinter.debug("Digest Succeed: " + f.getAbsolutePath());
+                log.debug("Digest Succeed: {}", f.getAbsolutePath());
                 retVal = true;
             } catch (IOException e) {
                 retVal = false;

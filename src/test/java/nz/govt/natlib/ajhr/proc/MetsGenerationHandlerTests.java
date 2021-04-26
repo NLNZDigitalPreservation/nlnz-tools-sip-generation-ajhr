@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.List;
 
 public class MetsGenerationHandlerTests {
+    private static final String ROOT_FOLDER = "C:\\Users\\leefr\\workspace\\tmp";
     private static MetsGenerationHandler testInstance;
 
     @BeforeAll
@@ -20,9 +21,9 @@ public class MetsGenerationHandlerTests {
         MetsTemplateService metsTemplateService = new MetsTemplateService();
         Template template = metsTemplateService.loadTemplate();
 
-        File rootFolder = new File("Y:\\ndha\\pre-deposit_prod\\frank\\AJHR_ORIGINAL\\AJHR_1858_I_A-G");
-        File subFolder = new File("Y:\\ndha\\pre-deposit_prod\\frank\\AJHR_ORIGINAL\\AJHR_1858_I_A-G\\A-01");
-        String targetFolder = "Y:\\ndha\\pre-deposit_prod\\frank\\AJHR_TEST";
+        File rootFolder = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G");
+        File subFolder = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01");
+        String targetFolder = new File(ROOT_FOLDER, "AJHR_TEST").getAbsolutePath();
         testInstance = new MetsGenerationHandler(template, rootFolder, subFolder, targetFolder, true);
     }
 
@@ -48,14 +49,14 @@ public class MetsGenerationHandlerTests {
         MetadataMetProp metProp = MetadataMetProp.getInstance(testInstance.getRootDirectory().getName(), testInstance.getSubFolder().getName());
         assert metProp != null;
         assert metProp.getTitle().equals("AJHR");
-        assert metProp.getYear().equals("1858");
+        assert metProp.getYear().equals("1861");
         assert metProp.getVolume().equals("I_A-G");
         assert metProp.getAccrualPeriodicity().equals("A-01");
     }
 
     @Test
     public void testHandleFiles() throws IOException {
-        File folder = new File("Y:\\ndha\\pre-deposit_prod\\frank\\AJHR_ORIGINAL\\AJHR_1858_I_A-G\\A-01\\MM_01");
+        File folder = new File(ROOT_FOLDER,"AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01/MM_01");
         List<MetadataSipItem> list = testInstance.handleFiles(folder);
         assert list != null;
         assert list.size() > 0;
@@ -96,7 +97,7 @@ public class MetsGenerationHandlerTests {
 
     @Test
     public void testDigest() throws IOException {
-        File f = new File("Y:\\ndha\\pre-deposit_prod\\frank\\AJHR_ORIGINAL\\AJHR_1858_I_A-G\\A-01\\MM_01\\A-01_0001.xml");
+        File f = new File(ROOT_FOLDER,"AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01/MM_01/A-01_0001.xml");
         String fixityValue = testInstance.digest(f);
         assert fixityValue != null;
         assert fixityValue.length() > 0;

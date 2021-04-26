@@ -20,12 +20,15 @@ public class PrettyPrinter {
                 break;
             case SKIP:
                 println(ANSI_CYAN + msg);
+                break;
             case SUCC:
                 println(ANSI_GREEN + msg);
                 break;
             default:
                 println(msg);
         }
+
+//        println(ExceptionUtils.getStackTrace(new Exception()));
     }
 
     public static void debug(String... args) {
@@ -37,7 +40,7 @@ public class PrettyPrinter {
     }
 
     public static void info(String... args) {
-        println(ANSI_BLUE + format(args));
+        println(ANSI_RESET + format(args));
     }
 
     public static void println(String msg) {

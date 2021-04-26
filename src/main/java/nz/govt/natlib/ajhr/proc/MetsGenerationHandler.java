@@ -87,10 +87,6 @@ public class MetsGenerationHandler {
         File targetReadyFile = AJHRUtils.combinePath(this.targetRootLocation, READY_FOR_INGESTION_MARK);
         FileUtils.writeByteArrayToFile(targetReadyFile, new byte[0]);
 
-        //Mark as finished
-//        File sourceReadyFile = AJHRUtils.combinePath(this.subFolder, READY_FOR_INGESTION_MARK);
-//        FileUtils.writeByteArrayToFile(sourceReadyFile, new byte[0]);
-
         return MetadataRetVal.SUCC;
     }
 

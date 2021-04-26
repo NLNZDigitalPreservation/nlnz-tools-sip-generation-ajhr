@@ -34,7 +34,11 @@ public class MainApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        PrettyPrinter.info("Start processing, input arguments:");
+//        PrettyPrinter.info("Start processing, input arguments:");
+        if (args.length==0 || (args.length>0 && args[0].equalsIgnoreCase("--h"))){
+            printUsage();
+            return;
+        }
         Arrays.stream(args).forEach(PrettyPrinter::info);
         boolean rstParseArguments = parseArguments(args);
         if (rstParseArguments) {
@@ -76,8 +80,8 @@ public class MainApplication implements CommandLineRunner {
         }
 
         if (!properties.containsKey("forceReplace")) {
-            PrettyPrinter.info("The flag 'forceReplace' is set to 'true");
-            properties.put("forceReplace", true);
+            properties.put("forceReplace", "true");
+            PrettyPrinter.info("--forceReplace={}",properties.getProperty("forceReplace"));
         } else {
             try {
                 Boolean.parseBoolean(properties.getProperty("forceReplace"));
@@ -89,8 +93,8 @@ public class MainApplication implements CommandLineRunner {
         }
 
         if (!properties.containsKey("maxThreads")) {
-            PrettyPrinter.info("The 'maxThreads' is set to '1");
             properties.put("maxThreads", "1");
+            PrettyPrinter.info("--maxThreads={}",properties.getProperty("maxThreads"));
         } else {
             try {
                 int maxThreads = Integer.parseInt(properties.getProperty("maxThreads"));

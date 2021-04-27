@@ -10,6 +10,8 @@ import java.time.format.DateTimeFormatter;
 public class PrettyPrinter {
     public static final String OS = SystemUtils.OS_NAME;
     public static final String TERM = System.getenv().get("TERM");
+    public static final String IDEAL = System.getenv().get("IDEA_INITIAL_DIRECTORY");
+
 
     public static String ANSI_RESET = "\u001B[0m";
     public static String ANSI_BLUE = "\u001B[34m";
@@ -21,8 +23,8 @@ public class PrettyPrinter {
 //        System.getenv().forEach((k, v) -> {
 //            println(k + "=" + v);
 //        });
-        println("OS: " + OS + " TERM: " + TERM);
-        if (OS != null && OS.startsWith("Windows") && TERM == null) {
+//        println("OS: " + OS + " TERM: " + TERM);
+        if (OS != null && OS.startsWith("Windows") && TERM == null && IDEAL == null) {
             ANSI_RESET = "";
             ANSI_BLUE = "";
             ANSI_RED = "";

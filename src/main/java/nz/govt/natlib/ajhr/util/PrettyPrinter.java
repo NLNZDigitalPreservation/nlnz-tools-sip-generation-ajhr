@@ -1,6 +1,7 @@
 package nz.govt.natlib.ajhr.util;
 
 import nz.govt.natlib.ajhr.metadata.MetadataRetVal;
+import org.slf4j.Logger;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -13,7 +14,8 @@ public class PrettyPrinter {
     public static final String ANSI_CYAN = "\u001B[36m";
 
     public static void printResult(MetadataRetVal retVal, String... args) {
-        String msg = LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) + " " + String.format("[%s] %s", retVal.name().toUpperCase(), format(args));
+//        LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)
+        String msg = getTimestamp(LocalDateTime.now()) + " " + String.format("[%s] %s", retVal.name().toUpperCase(), format(args));
         switch (retVal) {
             case FAIL:
                 println(ANSI_RED + msg);
@@ -43,6 +45,24 @@ public class PrettyPrinter {
         println(ANSI_RESET + format(args));
     }
 
+    public static void debug(Logger log, String... args) {
+        String msg = format(args);
+        log.debug(msg);
+        println(ANSI_CYAN + msg);
+    }
+
+    public static void error(Logger log, String... args) {
+        String msg = format(args);
+        log.error(msg);
+        println(ANSI_RED + msg);
+    }
+
+    public static void info(Logger log, String... args) {
+        String msg = format(args);
+        log.info(msg);
+        println(ANSI_RESET + msg);
+    }
+
     public static void println(String msg) {
         System.out.println(msg + ANSI_RESET);
     }
@@ -57,5 +77,13 @@ public class PrettyPrinter {
             base = base.replaceFirst("\\{\\}", args[i]);
         }
         return base;
+    }
+
+    private static String getTimestamp(LocalDateTime ldtNow) {
+        String timestamp = ldtNow.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+        if (timestamp.length() > 23) {
+            timestamp = timestamp.substring(0, 23);
+        }
+        return timestamp;
     }
 }

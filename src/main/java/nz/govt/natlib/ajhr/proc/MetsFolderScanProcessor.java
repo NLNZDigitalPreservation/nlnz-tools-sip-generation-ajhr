@@ -40,15 +40,24 @@ public class MetsFolderScanProcessor {
 
     public void walkSourceFolder() throws InterruptedException, IOException {
         if (this.isForcedReplaced) {
-            log.info("Removed all existing contents from: {}", this.destDir);
-
             File fDestDir = new File(this.destDir);
             if (fDestDir.exists()) {
-                FileUtils.deleteDirectory(fDestDir);
-            }
-
-            if (!fDestDir.exists() && !fDestDir.mkdirs()) {
-                log.error("Failed to create dest directory");
+                File[] files = fDestDir.listFiles();
+                if (files != null) {
+                    PrettyPrinter.debug(log, "Will remove all existing contents from:" + this.destDir);
+                    for (File f : files) {
+                        if (f.isDirectory()) {
+                            FileUtils.deleteDirectory(f);
+                            PrettyPrinter.debug(log, "Deleted directory: " + f.getAbsolutePath());
+                        } else {
+                            FileUtils.forceDelete(f);
+                            PrettyPrinter.debug(log, "Deleted file: " + f.getAbsolutePath());
+                        }
+                    }
+                    PrettyPrinter.debug(log, "Removed all existing contents from: " + this.destDir);
+                }
+            } else if (!fDestDir.mkdirs()) {
+                PrettyPrinter.error(log, "Failed to create dest directory: " + fDestDir.getAbsolutePath());
                 return;
             }
         }

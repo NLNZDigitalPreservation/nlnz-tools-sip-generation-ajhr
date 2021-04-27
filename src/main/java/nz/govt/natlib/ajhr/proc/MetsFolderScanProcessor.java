@@ -44,7 +44,7 @@ public class MetsFolderScanProcessor {
             if (fDestDir.exists()) {
                 File[] files = fDestDir.listFiles();
                 if (files != null) {
-                    PrettyPrinter.debug(log, "Will remove all existing contents from:" + this.destDir);
+                    PrettyPrinter.debug(log, "Will remove all existing contents from: " + this.destDir);
                     for (File f : files) {
                         if (f.isDirectory()) {
                             FileUtils.deleteDirectory(f);

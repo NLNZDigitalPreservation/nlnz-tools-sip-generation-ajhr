@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
+    <springProperty name="LOG_PATH" source="logging.path" defaultValue="./logs" />
+
     <!-- Note that values enclosed by ${...} are NOT substituted in by Spring Boot. Instead, they refer to
          system variables. See https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-logging.html
          for details on how to configure Spring Boot application.properties to map to system properties that
@@ -16,7 +18,7 @@
 
     <appender name="GeneralLog"
               class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>./logs/ajhr-generation.log</file>
+        <file>${LOG_PATH}/ajhr-generation.log</file>
         <encoder
                 class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
             <!-- Note that brackets are special characters in the pattern and must be escaped -->

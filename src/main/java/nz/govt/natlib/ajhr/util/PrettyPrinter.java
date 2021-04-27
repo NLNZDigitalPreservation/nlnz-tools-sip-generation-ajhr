@@ -1,17 +1,35 @@
 package nz.govt.natlib.ajhr.util;
 
 import nz.govt.natlib.ajhr.metadata.MetadataRetVal;
+import org.apache.commons.lang3.SystemUtils;
 import org.slf4j.Logger;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 public class PrettyPrinter {
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_BLUE = "\u001B[34m";
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_GREEN = "\u001B[32m";
-    public static final String ANSI_CYAN = "\u001B[36m";
+    public static final String OS = SystemUtils.OS_NAME;
+    public static final String TERM = System.getenv().get("TERM");
+
+    public static String ANSI_RESET = "\u001B[0m";
+    public static String ANSI_BLUE = "\u001B[34m";
+    public static String ANSI_RED = "\u001B[31m";
+    public static String ANSI_GREEN = "\u001B[32m";
+    public static String ANSI_CYAN = "\u001B[36m";
+
+    static {
+//        System.getenv().forEach((k, v) -> {
+//            println(k + "=" + v);
+//        });
+        println("OS: " + OS + " TERM: " + TERM);
+        if (OS != null && OS.startsWith("Windows") && TERM == null) {
+            ANSI_RESET = "";
+            ANSI_BLUE = "";
+            ANSI_RED = "";
+            ANSI_GREEN = "";
+            ANSI_CYAN = "";
+        }
+    }
 
     public static void printResult(MetadataRetVal retVal, String... args) {
 //        LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)

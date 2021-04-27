@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -15,6 +16,7 @@ import java.util.Properties;
 
 @SpringBootApplication
 @ComponentScan(basePackages = {"nz.govt.natlib.ajhr"})
+@EnableAutoConfiguration
 public class MainApplication implements CommandLineRunner {
     private static final Logger log = LoggerFactory.getLogger(MainApplication.class);
 

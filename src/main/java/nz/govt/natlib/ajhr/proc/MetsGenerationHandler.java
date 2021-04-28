@@ -96,7 +96,7 @@ public class MetsGenerationHandler {
             return false;
         }
 
-        if (targetDirectory.exists() && !sourceDirectory.isDirectory()) {
+        if (targetDirectory.exists() && !targetDirectory.isDirectory()) {
             log.error("The target directory is not a directory: {}", targetDirectory.getAbsolutePath());
             return false;
         }

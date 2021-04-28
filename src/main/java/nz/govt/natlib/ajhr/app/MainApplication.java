@@ -20,12 +20,6 @@ import java.util.Properties;
 public class MainApplication implements CommandLineRunner {
     private static final Logger log = LoggerFactory.getLogger(MainApplication.class);
 
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_BLUE = "\u001B[34m";
-    public static final String ANSI_RED = "\u001B[31m";
-    public static final String ANSI_GREEN = "\u001B[32m";
-    public static final String ANSI_CYAN = "\u001B[36m";
-
     private final Properties properties = new Properties();
     @Autowired
     private MetsFolderScanProcessor processor;
@@ -36,8 +30,8 @@ public class MainApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-//        PrettyPrinter.info("Start processing, input arguments:");
-        if (args.length==0 || (args.length>0 && args[0].equalsIgnoreCase("--h"))){
+        PrettyPrinter.info("Start processing, input arguments:");
+        if (args.length == 0 || (args.length > 0 && args[0].equalsIgnoreCase("--h"))) {
             printUsage();
             return;
         }
@@ -83,7 +77,7 @@ public class MainApplication implements CommandLineRunner {
 
         if (!properties.containsKey("forceReplace")) {
             properties.put("forceReplace", "true");
-            PrettyPrinter.info("--forceReplace={}",properties.getProperty("forceReplace"));
+            PrettyPrinter.info("--forceReplace={}", properties.getProperty("forceReplace"));
         } else {
             try {
                 Boolean.parseBoolean(properties.getProperty("forceReplace"));
@@ -96,11 +90,11 @@ public class MainApplication implements CommandLineRunner {
 
         if (!properties.containsKey("maxThreads")) {
             properties.put("maxThreads", "1");
-            PrettyPrinter.info("--maxThreads={}",properties.getProperty("maxThreads"));
+            PrettyPrinter.info("--maxThreads={}", properties.getProperty("maxThreads"));
         } else {
             try {
                 int maxThreads = Integer.parseInt(properties.getProperty("maxThreads"));
-                if (maxThreads <= 1) {
+                if (maxThreads < 1) {
                     PrettyPrinter.error("Invalid arguments");
                     printUsage();
                     return false;

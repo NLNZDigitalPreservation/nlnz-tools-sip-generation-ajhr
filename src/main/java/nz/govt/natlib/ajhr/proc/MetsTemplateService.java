@@ -3,6 +3,9 @@ package nz.govt.natlib.ajhr.proc;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateExceptionHandler;
+import nz.govt.natlib.ajhr.util.PrettyPrinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -13,6 +16,8 @@ import java.io.InputStreamReader;
 
 @Service
 public class MetsTemplateService {
+    private static final Logger log = LoggerFactory.getLogger(MetsTemplateService.class);
+
     private static final String ROOT_DIR_TEMPLATE = ".";
     private static final String NAME_DEFAULT_TEMPLATE = "mets-template.xml";
 
@@ -58,6 +63,19 @@ public class MetsTemplateService {
         Resource resource = new ClassPathResource(templateName);
         InputStreamReader reader = new InputStreamReader(resource.getInputStream());
 
-        return new Template(templateName, reader, cfg);
+        Template template = null;
+        try {
+            template = new Template(templateName, reader, cfg);
+        } catch (IOException e) {
+            throw e;
+        } finally {
+            try {
+                reader.close();
+            } catch (IOException e) {
+                PrettyPrinter.info(log, e.getMessage());
+            }
+        }
+
+        return template;
     }
 }

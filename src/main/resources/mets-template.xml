@@ -247,7 +247,7 @@
 </#list>
 </mets:fileGrp>
 <mets:fileGrp ADMID="rep2-amd" ID="rep2" USE="VIEW">
-<#list pmList as mm>
+<#list mmList as mm>
 <mets:file ADMID="fid${mm.fileId}-2-amd" CHECKSUM="${mm.fixityValue}" CHECKSUMTYPE="${mm.fixityType}"
            GROUPID="${mm.fileId}" ID="fid${mm.fileId}-1" MIMETYPE="">
     <mets:FLocat LOCTYPE="URL" xlin:href="MM_01/${mm.fileOriginalName}" xmlns:xlin="http://www.w3.org/1999/xlink"/>

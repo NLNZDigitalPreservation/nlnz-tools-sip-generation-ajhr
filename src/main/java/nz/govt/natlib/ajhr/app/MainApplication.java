@@ -48,6 +48,8 @@ public class MainApplication implements CommandLineRunner {
             processor.setMaxThreads(Integer.parseInt(properties.getProperty("maxThreads")));
             processor.init();
             processor.walkSourceFolder();
+            PrettyPrinter.info(log, "Finished");
+            MultiThreadsPrint.close();
         }
     }
 

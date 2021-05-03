@@ -63,6 +63,8 @@ public class MetsFolderScanProcessor {
             }
         }
         _walkSourceFolder(new File(srcDir));
+
+        semaphore.acquire(maxThreads);
     }
 
     private void _walkSourceFolder(File directory) throws InterruptedException {

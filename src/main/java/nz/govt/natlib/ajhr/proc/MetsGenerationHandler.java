@@ -70,7 +70,7 @@ public class MetsGenerationHandler {
             FileUtils.deleteDirectory(this.targetRootLocation);
         }
 
-        String metsXml = createMetsXml();
+        String metsXml = createMetsXmlAndCopyStreams();
 
 //        boolean retVal;
 //        File pmSourceFolder = AJHRUtils.combinePath(this.subFolder, PRESERVATION_MASTER_FOLDER);
@@ -133,10 +133,10 @@ public class MetsGenerationHandler {
         return retVal;
     }
 
-    public String createMetsXml() throws IOException, TemplateException, NoSuchAlgorithmException {
+    public String createMetsXmlAndCopyStreams() throws IOException, TemplateException, NoSuchAlgorithmException {
         MetadataMetProp metProp = MetadataMetProp.getInstance(this.rootDirectory.getName(), this.subFolder.getName());
-        List<MetadataSipItem> pmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, PRESERVATION_MASTER_FOLDER), AJHRUtils.combinePath(this.targetRootLocation, PRESERVATION_MASTER_FOLDER));
-        List<MetadataSipItem> mmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER), AJHRUtils.combinePath(this.targetRootLocation, MODIFIED_MASTER_FOLDER));
+        List<MetadataSipItem> pmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, PRESERVATION_MASTER_FOLDER), AJHRUtils.combinePath(this.targetRootLocation, PRESERVATION_MASTER_STREAM_FOLDER));
+        List<MetadataSipItem> mmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER), AJHRUtils.combinePath(this.targetRootLocation, MODIFIED_MASTER_STREAM_FOLDER));
 
         ModelMap model = new ModelMap();
         model.addAttribute("metProp", metProp);

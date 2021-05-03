@@ -84,7 +84,8 @@ public class PrettyPrinter {
     }
 
     public static void println(String msg) {
-        System.out.println(msg + ANSI_RESET);
+//        System.out.println(msg + ANSI_RESET);
+        MultiThreadsPrint.putFinished(msg + ANSI_RESET);
     }
 
     private static String format(String... args) {

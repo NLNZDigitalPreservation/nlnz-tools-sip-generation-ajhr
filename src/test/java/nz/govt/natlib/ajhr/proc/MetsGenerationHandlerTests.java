@@ -5,11 +5,13 @@ import freemarker.template.TemplateException;
 import nz.govt.natlib.ajhr.metadata.MetadataMetProp;
 import nz.govt.natlib.ajhr.metadata.MetadataSipItem;
 import nz.govt.natlib.ajhr.util.AJHRUtils;
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public class MetsGenerationHandlerTests {
@@ -28,7 +30,7 @@ public class MetsGenerationHandlerTests {
     }
 
     @Test
-    public void testProcess() throws IOException, TemplateException {
+    public void testProcess() throws IOException, TemplateException, NoSuchAlgorithmException {
         testInstance.process();
 
         File targetStreamFolder = AJHRUtils.combinePath(testInstance.getTargetRootLocation(), "content", "streams");
@@ -37,8 +39,8 @@ public class MetsGenerationHandlerTests {
     }
 
     @Test
-    public void testCreateMetsXml() throws IOException, TemplateException {
-        String metsXml = testInstance.createMetsXml();
+    public void testCreateMetsXml() throws IOException, TemplateException, NoSuchAlgorithmException {
+        String metsXml = testInstance.createMetsXmlAndCopyStreams();
         System.out.println(metsXml);
         assert metsXml != null;
         assert metsXml.length() > 0;
@@ -55,9 +57,9 @@ public class MetsGenerationHandlerTests {
     }
 
     @Test
-    public void testHandleFiles() throws IOException {
+    public void testHandleFiles() throws IOException, NoSuchAlgorithmException {
         File folder = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01/MM_01");
-        List<MetadataSipItem> list = testInstance.handleFiles(null, folder);
+        List<MetadataSipItem> list = testInstance.handleFiles(null, folder, FileUtils.getTempDirectory());
         assert list != null;
         assert list.size() > 0;
 

@@ -1,6 +1,7 @@
 package nz.govt.natlib.ajhr.util;
 
 import java.util.*;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -9,7 +10,7 @@ public class MultiThreadsPrint {
     private static final String lineSeparator = System.lineSeparator();
     private static final Map<String, Message> msgQueue = new HashMap<>();
     private static int countPreviousUnfinished = 0;
-
+    private static ScheduledFuture<?> future;
 
     public static void init() {
         Runnable handler = new Runnable() {
@@ -18,8 +19,13 @@ public class MultiThreadsPrint {
                 print();
             }
         };
+        future = _schedule_executor.scheduleWithFixedDelay(handler, 500, 500, TimeUnit.MILLISECONDS);
+    }
 
-        _schedule_executor.scheduleWithFixedDelay(handler, 500, 500, TimeUnit.MILLISECONDS);
+    public static void close() {
+        future.cancel(true);
+        _schedule_executor.shutdown();
+        print();
     }
 
     synchronized private static void print() {
@@ -27,7 +33,12 @@ public class MultiThreadsPrint {
         StringBuilder unfinishedBuf = new StringBuilder();
         StringBuilder finishedBuf = new StringBuilder();
         List<String> finishedKey = new ArrayList<>();
-        msgQueue.values().forEach(msg -> {
+        msgQueue.values().stream().sorted(new Comparator<Message>() {
+            @Override
+            public int compare(Message o1, Message o2) {
+                return (int) (o1.getTimestamp() - o2.getTimestamp());
+            }
+        }).forEach(msg -> {
             if (msg.isFinished()) {
                 finishedKey.add(msg.getKey());
                 finishedBuf.append(msg.getInfo()).append(lineSeparator);
@@ -60,6 +71,10 @@ public class MultiThreadsPrint {
         put(key, info, true);
     }
 
+    public static void putFinished(String key, String info) {
+        put(key, info, true);
+    }
+
     public static String putUnFinished(String info) {
         String key = UUID.randomUUID().toString();
         put(key, info, false);
@@ -71,6 +86,7 @@ public class MultiThreadsPrint {
     }
 
     static class Message {
+        private long timestamp = System.currentTimeMillis();
         private boolean finished;
         private String info;
         private String key;
@@ -97,6 +113,14 @@ public class MultiThreadsPrint {
 
         public void setInfo(String info) {
             this.info = info;
+        }
+
+        public long getTimestamp() {
+            return timestamp;
+        }
+
+        public void setTimestamp(long timestamp) {
+            this.timestamp = timestamp;
         }
     }
 }

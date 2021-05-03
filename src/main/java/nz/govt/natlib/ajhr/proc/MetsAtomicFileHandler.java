@@ -1,12 +1,12 @@
 package nz.govt.natlib.ajhr.proc;
 
+import nz.govt.natlib.ajhr.util.MultiThreadsPrint;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.concurrent.TimeUnit;
 
 public class MetsAtomicFileHandler {
     private static final int STREAM_BUFFER_LENGTH = 1024 * 16;
@@ -34,41 +34,26 @@ public class MetsAtomicFileHandler {
         int read = inputStream.read(buffer, 0, STREAM_BUFFER_LENGTH);
 
         double lenTotal = this.srcFile.length(), lenCurrentRead = 0;
-        int lenPreviousMsg = 0;
 
-        System.out.print(srcFile.getAbsoluteFile());
+        String msg = String.format("%s [%.2f%s]", srcFile.getAbsolutePath(), lenCurrentRead * 100 / lenTotal, "%");
+        String key = MultiThreadsPrint.putUnFinished(msg);
         while (read > -1) {
             digest.update(buffer, 0, read);
 
             lenCurrentRead += read;
 
-            String backspaceString = "\b".repeat(lenPreviousMsg);
-            System.out.print(backspaceString);
-
-            String msg = String.format(" [%.2f%s]", lenCurrentRead * 100 / lenTotal, "%");
-            System.out.print(msg);
-            lenPreviousMsg = msg.length();
+            msg = String.format("%s [%.2f%s]", srcFile.getAbsolutePath(), lenCurrentRead * 100 / lenTotal, "%");
+            MultiThreadsPrint.putUnFinished(key, msg);
 
             read = inputStream.read(buffer, 0, STREAM_BUFFER_LENGTH);
-
-            /*
-                        try {
-                            TimeUnit.MILLISECONDS.sleep(100L);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
-            */
         }
 
         this.digestString = Hex.encodeHexString(digest.digest(), true);
 
         inputStream.close();
 
-        String backspaceString = "\b".repeat(lenPreviousMsg);
-        System.out.print(backspaceString);
-
-        String msg = String.format(" 100%s digest=%s size=%d", "%", this.digestString, (long) lenTotal);
-        System.out.println(msg);
+        msg = String.format("%s 100%s digest=%s size=%d", "%", srcFile.getAbsolutePath(), this.digestString, (long) lenTotal);
+        MultiThreadsPrint.putFinished(key, msg);
 
         return true;
     }
@@ -88,21 +73,17 @@ public class MetsAtomicFileHandler {
         int read = inputStream.read(buffer, 0, STREAM_BUFFER_LENGTH);
 
         double lenTotal = this.srcFile.length(), lenCurrentRead = 0;
-        int lenPreviousMsg = 0;
 
-        System.out.print(srcFile.getAbsoluteFile());
+        String msg = String.format("%s [%.2f%s]", srcFile.getAbsolutePath(), lenCurrentRead * 100 / lenTotal, "%");
+        String key = MultiThreadsPrint.putUnFinished(msg);
         while (read > -1) {
             digest.update(buffer, 0, read);
             outputStream.write(buffer, 0, read);
 
             lenCurrentRead += read;
 
-            String backspaceString = "\b".repeat(lenPreviousMsg);
-            System.out.print(backspaceString);
-
-            String msg = String.format(" [%.2f%s]", lenCurrentRead * 100 / lenTotal, "%");
-            System.out.print(msg);
-            lenPreviousMsg = msg.length();
+            msg = String.format("%s [%.2f%s]", srcFile.getAbsolutePath(), lenCurrentRead * 100 / lenTotal, "%");
+            MultiThreadsPrint.putUnFinished(key, msg);
 
             read = inputStream.read(buffer, 0, STREAM_BUFFER_LENGTH);
         }
@@ -112,11 +93,8 @@ public class MetsAtomicFileHandler {
         outputStream.close();
         inputStream.close();
 
-        String backspaceString = "\b".repeat(lenPreviousMsg);
-        System.out.print(backspaceString);
-
-        String msg = String.format(" 100%s digest=%s size=%d", "%", this.digestString, (long) lenTotal);
-        System.out.println(msg);
+        msg = String.format("%s 100%s digest=%s size=%d", srcFile.getAbsolutePath(), "%", this.digestString, (long) lenTotal);
+        MultiThreadsPrint.putFinished(key, msg);
 
         return true;
     }

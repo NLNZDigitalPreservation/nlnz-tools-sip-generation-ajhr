@@ -19,7 +19,7 @@ public class MultiThreadsPrint {
                 print();
             }
         };
-        future = _schedule_executor.scheduleWithFixedDelay(handler, 500, 500, TimeUnit.MILLISECONDS);
+        future = _schedule_executor.scheduleWithFixedDelay(handler, 500, 250, TimeUnit.MILLISECONDS);
     }
 
     public static void close() {
@@ -29,7 +29,11 @@ public class MultiThreadsPrint {
     }
 
     synchronized private static void print() {
-        System.out.print("\r".repeat(countPreviousUnfinished));
+//        System.out.print("\b".repeat(countPreviousUnfinished));
+        if (countPreviousUnfinished > 0) {
+            System.out.printf("\033[%dA", countPreviousUnfinished);
+            System.out.printf("\033[2K");
+        }
         StringBuilder unfinishedBuf = new StringBuilder();
         StringBuilder finishedBuf = new StringBuilder();
         List<String> finishedKey = new ArrayList<>();
@@ -47,6 +51,7 @@ public class MultiThreadsPrint {
             }
         });
         countPreviousUnfinished = msgQueue.size() - finishedKey.size();
+//        countPreviousUnfinished=unfinishedBuf.length();
         finishedKey.forEach(msgQueue::remove);
         System.out.print(finishedBuf.toString());
         System.out.print(unfinishedBuf.toString());

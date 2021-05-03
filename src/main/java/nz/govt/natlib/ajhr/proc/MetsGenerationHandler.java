@@ -6,15 +6,18 @@ import nz.govt.natlib.ajhr.metadata.MetadataMetProp;
 import nz.govt.natlib.ajhr.metadata.MetadataRetVal;
 import nz.govt.natlib.ajhr.metadata.MetadataSipItem;
 import nz.govt.natlib.ajhr.util.AJHRUtils;
+import nz.govt.natlib.ajhr.util.PrettyPrinter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ui.ModelMap;
-import org.springframework.util.DigestUtils;
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,6 +30,17 @@ public class MetsGenerationHandler {
     private static final String STREAM_FOLDER = "content" + File.separator + "streams";
     private static final String PRESERVATION_MASTER_STREAM_FOLDER = STREAM_FOLDER + File.separator + PRESERVATION_MASTER_FOLDER;
     private static final String MODIFIED_MASTER_STREAM_FOLDER = STREAM_FOLDER + File.separator + MODIFIED_MASTER_FOLDER;
+
+    private static DigestUtils _digester = null;
+
+    static {
+        try {
+            _digester = new DigestUtils(MessageDigest.getInstance("MD5"));
+        } catch (NoSuchAlgorithmException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     private Template metTemplate;
     private File rootDirectory;
@@ -121,8 +135,8 @@ public class MetsGenerationHandler {
 
     public String createMetsXml() throws IOException, TemplateException {
         MetadataMetProp metProp = MetadataMetProp.getInstance(this.rootDirectory.getName(), this.subFolder.getName());
-        List<MetadataSipItem> pmList = handleFiles(AJHRUtils.combinePath(this.subFolder, PRESERVATION_MASTER_FOLDER));
-        List<MetadataSipItem> mmList = handleFiles(AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER));
+        List<MetadataSipItem> pmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, PRESERVATION_MASTER_FOLDER));
+        List<MetadataSipItem> mmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER));
 
         ModelMap model = new ModelMap();
         model.addAttribute("metProp", metProp);
@@ -135,7 +149,7 @@ public class MetsGenerationHandler {
         return writer.toString();
     }
 
-    public List<MetadataSipItem> handleFiles(File directory) throws IOException {
+    public List<MetadataSipItem> handleFiles(MetadataMetProp metProp, File directory) throws IOException {
         List<MetadataSipItem> list = new ArrayList<>();
 
         File[] files = directory.listFiles();
@@ -146,14 +160,20 @@ public class MetsGenerationHandler {
 
         int fileId = 1;
         for (File f : files) {
+            String fileName = f.getName();
             MetadataSipItem item = new MetadataSipItem();
             item.setFile(f);
             item.setFileId(fileId++);
-            item.setFileOriginalName(f.getName());
+            item.setFileOriginalName(fileName);
             item.setFileEntityType(getFileEntityTypeFromExt(f.getName()));
             item.setFileSize(Long.toString(f.length()));
             item.setFixityValue(digest(f));
 
+            if (fileName.toLowerCase().startsWith(metProp.getAccrualPeriodicity().toLowerCase())) {
+                item.setLabel(fileName.substring(metProp.getAccrualPeriodicity().length() + 1));
+            } else {
+                item.setLabel(fileName);
+            }
             list.add(item);
         }
         return list;
@@ -180,9 +200,9 @@ public class MetsGenerationHandler {
         while (!retVal && tryTimes > 0) {
             tryTimes--;
             try {
-                byte[] md5 = DigestUtils.md5Digest(new FileInputStream(f));
-                md5Hex = DigestUtils.md5DigestAsHex(md5);
-                log.debug("Digest Succeed: {}", f.getAbsolutePath());
+                md5Hex = _digester.digestAsHex(f);
+                PrettyPrinter.info(f.getAbsolutePath() + "\t" + md5Hex);
+                log.debug("Digest Succeed: {}, digest: {}", f.getAbsolutePath(), md5Hex);
                 retVal = true;
             } catch (IOException e) {
                 retVal = false;

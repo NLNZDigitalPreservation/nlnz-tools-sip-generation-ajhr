@@ -56,7 +56,7 @@ public class MetsGenerationHandlerTests {
 
     @Test
     public void testHandleFiles() throws IOException {
-        File folder = new File(ROOT_FOLDER,"AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01/MM_01");
+        File folder = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01/MM_01");
         List<MetadataSipItem> list = testInstance.handleFiles(folder);
         assert list != null;
         assert list.size() > 0;
@@ -97,9 +97,17 @@ public class MetsGenerationHandlerTests {
 
     @Test
     public void testDigest() throws IOException {
-        File f = new File(ROOT_FOLDER,"AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01/MM_01/A-01_0001.xml");
+        File f = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01/MM_01/A-01_0001.xml");
         String fixityValue = testInstance.digest(f);
         assert fixityValue != null;
         assert fixityValue.length() > 0;
+    }
+
+    @Test
+    public void testDigestOfficial() {
+        File f = new File("src/test/resources/image.tif");
+        String digest = testInstance.digest(f);
+        assert digest != null;
+        assert digest.equals("48c0185f9c5568a7912ba9cba03071a8");
     }
 }

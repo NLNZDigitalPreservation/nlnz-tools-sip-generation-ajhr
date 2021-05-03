@@ -14,6 +14,8 @@ public class MetadataSipItem {
     private String fixityValue;
     private String fixityType = "MD5";
 
+    private String label;
+
     public String toString() {
         StringBuilder buf = new StringBuilder();
         buf.append("file: ").append(this.file.getAbsolutePath()).append(System.lineSeparator());
@@ -89,5 +91,13 @@ public class MetadataSipItem {
 
     public void setFixityType(String fixityType) {
         this.fixityType = fixityType;
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public void setLabel(String label) {
+        this.label = label.toLowerCase();
     }
 }

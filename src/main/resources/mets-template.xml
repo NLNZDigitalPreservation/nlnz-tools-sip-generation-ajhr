@@ -2,8 +2,7 @@
     <mets:dmdSec ID="ie-dmd">
         <mets:mdWrap MDTYPE="DC">
             <mets:xmlData>
-                <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/"
-                           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
                     <dc:language>en-nz</dc:language>
                     <dc:title>${metProp.title}</dc:title>
                     <dcterms:bibliographicCitation>${metProp.volume}</dcterms:bibliographicCitation>
@@ -236,45 +235,43 @@
     </mets:mdWrap>
 </mets:digiprovMD>
 </mets:amdSec>
-        </#list>
+</#list>
 <mets:fileSec>
 <mets:fileGrp ADMID="rep1-amd" ID="rep1" USE="VIEW">
     <#list pmList as pm>
-    <mets:file ADMID="fid${pm.fileId}-1-amd" CHECKSUM="${pm.fixityValue}" CHECKSUMTYPE="${pm.fixityType}"
-               GROUPID="${pm.fileId}" ID="fid${pm.fileId}-1" MIMETYPE="">
+    <mets:file ADMID="fid${pm.fileId}-1-amd" CHECKSUM="${pm.fixityValue}" CHECKSUMTYPE="${pm.fixityType}" GROUPID="${pm.fileId}" ID="fid${pm.fileId}-1" MIMETYPE="">
         <mets:FLocat LOCTYPE="URL" xlin:href="PM_01/${pm.fileOriginalName}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
     </mets:file>
-</#list>
+    </#list>
 </mets:fileGrp>
 <mets:fileGrp ADMID="rep2-amd" ID="rep2" USE="VIEW">
-<#list mmList as mm>
-<mets:file ADMID="fid${mm.fileId}-2-amd" CHECKSUM="${mm.fixityValue}" CHECKSUMTYPE="${mm.fixityType}"
-           GROUPID="${mm.fileId}" ID="fid${mm.fileId}-1" MIMETYPE="">
-    <mets:FLocat LOCTYPE="URL" xlin:href="MM_01/${mm.fileOriginalName}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
-</mets:file>
-</#list>
-        </mets:fileGrp>
-        </mets:fileSec>
+    <#list mmList as mm>
+    <mets:file ADMID="fid${mm.fileId}-2-amd" CHECKSUM="${mm.fixityValue}" CHECKSUMTYPE="${mm.fixityType}" GROUPID="${mm.fileId}" ID="fid${mm.fileId}-2" MIMETYPE="">
+        <mets:FLocat LOCTYPE="URL" xlin:href="MM_01/${mm.fileOriginalName}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
+    </mets:file>
+    </#list>
+</mets:fileGrp>
+</mets:fileSec>
 <mets:structMap ID="rep1-1" TYPE="PHYSICAL">
 <mets:div LABEL="PRESERVATION_MASTER;VIEW">
     <mets:div LABEL="Table of Contents">
         <#list pmList as pm>
-        <mets:div LABEL="${pm.fileOriginalName}" TYPE="FILE">
+        <mets:div LABEL="${pm.label}" TYPE="FILE">
             <mets:fptr FILEID="fid${pm.fileId}-1"/>
         </mets:div>
-    </#list>
+        </#list>
+    </mets:div>
 </mets:div>
-</mets:div>
-        </mets:structMap>
+</mets:structMap>
 <mets:structMap ID="rep2-1" TYPE="PHYSICAL">
 <mets:div LABEL="MODIFIED_MASTER;VIEW">
     <mets:div LABEL="Table of Contents">
         <#list mmList as mm>
-        <mets:div LABEL="${mm.fileOriginalName}" TYPE="FILE">
+        <mets:div LABEL="${mm.label}" TYPE="FILE">
             <mets:fptr FILEID="fid${mm.fileId}-2"/>
         </mets:div>
-    </#list>
+        </#list>
+    </mets:div>
 </mets:div>
-</mets:div>
-        </mets:structMap>
-        </mets:mets>
+</mets:structMap>
+</mets:mets>

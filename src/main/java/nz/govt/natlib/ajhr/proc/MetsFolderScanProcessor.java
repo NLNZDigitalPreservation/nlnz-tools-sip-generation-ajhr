@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 //import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Semaphore;
 
 @Service
@@ -111,7 +112,7 @@ public class MetsFolderScanProcessor {
                                 log.debug("Found valid subfolder: {}", subFolder.getAbsolutePath());
                                 MetsGenerationHandler generationProcessor = new MetsGenerationHandler(metsTemplate, directory, subFolder, destDir, isForcedReplaced);
                                 retVal = generationProcessor.process();
-                            } catch (TemplateException | IOException e) {
+                            } catch (TemplateException | IOException | NoSuchAlgorithmException e) {
                                 log.error("Failed to generate SIP for: {}", subFolder.getAbsolutePath(), e);
                             }
                         }

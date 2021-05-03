@@ -5,7 +5,7 @@ plugins {
 }
 
 group = 'nz.govt.natlib'
-version = '0.0.1-SNAPSHOT'
+version = '1.0.0-RELEASE'
 sourceCompatibility = '11'
 
 repositories {

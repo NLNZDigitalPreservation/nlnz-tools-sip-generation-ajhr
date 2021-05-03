@@ -1,6 +1,7 @@
 package nz.govt.natlib.ajhr.app;
 
 import nz.govt.natlib.ajhr.proc.MetsFolderScanProcessor;
+import nz.govt.natlib.ajhr.util.MultiThreadsPrint;
 import nz.govt.natlib.ajhr.util.PrettyPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +31,8 @@ public class MainApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        MultiThreadsPrint.init();
+
         PrettyPrinter.info("Start processing, input arguments:");
         if (args.length == 0 || (args.length > 0 && args[0].equalsIgnoreCase("--h"))) {
             printUsage();

@@ -57,7 +57,7 @@ public class MetsGenerationHandler {
         this.isForced = isForced;
     }
 
-    public MetadataRetVal process() throws IOException, TemplateException {
+    public MetadataRetVal process() throws IOException, TemplateException, NoSuchAlgorithmException {
         File readyForIngestionMarkFile = AJHRUtils.combinePath(targetRootLocation, READY_FOR_INGESTION_MARK);
         if (readyForIngestionMarkFile.exists() && !isForced) {
             log.info("Skip {}", subFolder.getAbsolutePath());
@@ -72,26 +72,26 @@ public class MetsGenerationHandler {
 
         String metsXml = createMetsXml();
 
-        boolean retVal;
-        File pmSourceFolder = AJHRUtils.combinePath(this.subFolder, PRESERVATION_MASTER_FOLDER);
-        File pmTargetContentStreamFolder = AJHRUtils.combinePath(targetRootLocation, PRESERVATION_MASTER_STREAM_FOLDER);
-        retVal = copyDirectory(pmSourceFolder, pmTargetContentStreamFolder);
-        if (!retVal) {
-            log.error("Failed to copy folder: {} -> {}", pmSourceFolder.getAbsolutePath(), pmTargetContentStreamFolder.getAbsolutePath());
-            return MetadataRetVal.FAIL;
-        } else {
-            log.debug("Copy folder: {} -> {}", pmSourceFolder.getAbsolutePath(), pmTargetContentStreamFolder.getAbsolutePath());
-        }
-
-        File mmSourceFolder = AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER);
-        File mmTargetContentStreamFolder = AJHRUtils.combinePath(targetRootLocation, MODIFIED_MASTER_STREAM_FOLDER);
-        retVal = copyDirectory(mmSourceFolder, mmTargetContentStreamFolder);
-        if (!retVal) {
-            log.error("Failed to copy folder: {} -> {}", mmSourceFolder.getAbsolutePath(), mmTargetContentStreamFolder.getAbsolutePath());
-            return MetadataRetVal.FAIL;
-        } else {
-            log.debug("Copy folder: {} -> {}", mmSourceFolder.getAbsolutePath(), mmTargetContentStreamFolder.getAbsolutePath());
-        }
+//        boolean retVal;
+//        File pmSourceFolder = AJHRUtils.combinePath(this.subFolder, PRESERVATION_MASTER_FOLDER);
+//        File pmTargetContentStreamFolder = AJHRUtils.combinePath(targetRootLocation, PRESERVATION_MASTER_STREAM_FOLDER);
+//        retVal = copyDirectory(pmSourceFolder, pmTargetContentStreamFolder);
+//        if (!retVal) {
+//            log.error("Failed to copy folder: {} -> {}", pmSourceFolder.getAbsolutePath(), pmTargetContentStreamFolder.getAbsolutePath());
+//            return MetadataRetVal.FAIL;
+//        } else {
+//            log.debug("Copy folder: {} -> {}", pmSourceFolder.getAbsolutePath(), pmTargetContentStreamFolder.getAbsolutePath());
+//        }
+//
+//        File mmSourceFolder = AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER);
+//        File mmTargetContentStreamFolder = AJHRUtils.combinePath(targetRootLocation, MODIFIED_MASTER_STREAM_FOLDER);
+//        retVal = copyDirectory(mmSourceFolder, mmTargetContentStreamFolder);
+//        if (!retVal) {
+//            log.error("Failed to copy folder: {} -> {}", mmSourceFolder.getAbsolutePath(), mmTargetContentStreamFolder.getAbsolutePath());
+//            return MetadataRetVal.FAIL;
+//        } else {
+//            log.debug("Copy folder: {} -> {}", mmSourceFolder.getAbsolutePath(), mmTargetContentStreamFolder.getAbsolutePath());
+//        }
 
         //Write mets xml
         File targetMetsXmlFile = AJHRUtils.combinePath(this.targetRootLocation, "content", "mets.xml");
@@ -133,10 +133,10 @@ public class MetsGenerationHandler {
         return retVal;
     }
 
-    public String createMetsXml() throws IOException, TemplateException {
+    public String createMetsXml() throws IOException, TemplateException, NoSuchAlgorithmException {
         MetadataMetProp metProp = MetadataMetProp.getInstance(this.rootDirectory.getName(), this.subFolder.getName());
-        List<MetadataSipItem> pmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, PRESERVATION_MASTER_FOLDER));
-        List<MetadataSipItem> mmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER));
+        List<MetadataSipItem> pmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, PRESERVATION_MASTER_FOLDER), AJHRUtils.combinePath(this.targetRootLocation, PRESERVATION_MASTER_FOLDER));
+        List<MetadataSipItem> mmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER), AJHRUtils.combinePath(this.targetRootLocation, MODIFIED_MASTER_FOLDER));
 
         ModelMap model = new ModelMap();
         model.addAttribute("metProp", metProp);
@@ -149,25 +149,28 @@ public class MetsGenerationHandler {
         return writer.toString();
     }
 
-    public List<MetadataSipItem> handleFiles(MetadataMetProp metProp, File directory) throws IOException {
+    public List<MetadataSipItem> handleFiles(MetadataMetProp metProp, File srcDirectory, File destDirectory) throws IOException, NoSuchAlgorithmException {
         List<MetadataSipItem> list = new ArrayList<>();
 
-        File[] files = directory.listFiles();
+        File[] files = srcDirectory.listFiles();
         if (files == null) {
-            log.error("The directory is empty: {}", directory.getAbsolutePath());
-            throw new IOException("The directory is empty: " + directory.getAbsolutePath());
+            log.error("The directory is empty: {}", srcDirectory.getAbsolutePath());
+            throw new IOException("The directory is empty: " + srcDirectory.getAbsolutePath());
         }
 
         int fileId = 1;
         for (File f : files) {
             String fileName = f.getName();
+            MetsAtomicFileHandler fileAtomicHandler = new MetsAtomicFileHandler(f, new File(destDirectory, f.getName()));
+            boolean retVal = fileAtomicHandler.md5DigestAndCopy();
+
             MetadataSipItem item = new MetadataSipItem();
             item.setFile(f);
             item.setFileId(fileId++);
             item.setFileOriginalName(fileName);
             item.setFileEntityType(getFileEntityTypeFromExt(f.getName()));
             item.setFileSize(Long.toString(f.length()));
-            item.setFixityValue(digest(f));
+            item.setFixityValue(fileAtomicHandler.getDigestString());
 
             if (fileName.toLowerCase().startsWith(metProp.getAccrualPeriodicity().toLowerCase())) {
                 item.setLabel(fileName.substring(metProp.getAccrualPeriodicity().length() + 1));
@@ -210,6 +213,7 @@ public class MetsGenerationHandler {
         }
         return md5Hex;
     }
+
 
     public Template getMetTemplate() {
         return metTemplate;

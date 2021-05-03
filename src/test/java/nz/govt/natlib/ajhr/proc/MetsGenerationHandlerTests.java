@@ -57,7 +57,7 @@ public class MetsGenerationHandlerTests {
     @Test
     public void testHandleFiles() throws IOException {
         File folder = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01/MM_01");
-        List<MetadataSipItem> list = testInstance.handleFiles(folder);
+        List<MetadataSipItem> list = testInstance.handleFiles(null, folder);
         assert list != null;
         assert list.size() > 0;
 

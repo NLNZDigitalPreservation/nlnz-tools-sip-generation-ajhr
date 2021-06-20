@@ -36,7 +36,7 @@ public class MainApplication implements CommandLineRunner {
         PrettyPrinter.info("Start processing, input arguments:");
         if (args.length == 0 || args[0].equalsIgnoreCase("--h")) {
             printUsage();
-            return;
+            System.exit(0);
         }
         Arrays.stream(args).forEach(PrettyPrinter::info);
         boolean rstParseArguments = parseArguments(args);
@@ -52,6 +52,9 @@ public class MainApplication implements CommandLineRunner {
             processor.walkSourceFolder();
             PrettyPrinter.info(log, "Finished");
             MultiThreadsPrint.close();
+            System.exit(0);
+        } else {
+            System.exit(-1);
         }
     }
 

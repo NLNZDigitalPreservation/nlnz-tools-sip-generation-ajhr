@@ -34,7 +34,7 @@ public class MainApplication implements CommandLineRunner {
         MultiThreadsPrint.init();
 
         PrettyPrinter.info("Start processing, input arguments:");
-        if (args.length == 0 || (args.length > 0 && args[0].equalsIgnoreCase("--h"))) {
+        if (args.length == 0 || args[0].equalsIgnoreCase("--h")) {
             printUsage();
             return;
         }
@@ -46,6 +46,8 @@ public class MainApplication implements CommandLineRunner {
             processor.setDestDir(properties.getProperty("destDir"));
             processor.setForcedReplaced(Boolean.parseBoolean(properties.getProperty("forceReplace")));
             processor.setMaxThreads(Integer.parseInt(properties.getProperty("maxThreads")));
+            processor.setStartYear(Integer.parseInt(properties.getProperty("startYear")));
+            processor.setEndYear(Integer.parseInt(properties.getProperty("endYear")));
             processor.init();
             processor.walkSourceFolder();
             PrettyPrinter.info(log, "Finished");
@@ -64,7 +66,7 @@ public class MainApplication implements CommandLineRunner {
 
             String key = items[0].trim(), value = items[1].trim();
             if (!key.startsWith("--")) {
-                PrettyPrinter.error("Invalid arguments");
+                PrettyPrinter.error("Invalid arguments: " + key);
                 printUsage();
                 return false;
             }
@@ -75,7 +77,7 @@ public class MainApplication implements CommandLineRunner {
         }
 
         if (!properties.containsKey("srcDir") || !properties.containsKey("destDir")) {
-            PrettyPrinter.error("Invalid arguments");
+            PrettyPrinter.error("Invalid arguments: srcDir or destDir");
             printUsage();
             return false;
         }
@@ -85,9 +87,9 @@ public class MainApplication implements CommandLineRunner {
             PrettyPrinter.info("--forceReplace={}", properties.getProperty("forceReplace"));
         } else {
             try {
-                Boolean.parseBoolean(properties.getProperty("forceReplace"));
+                Boolean.parseBoolean(properties.getProperty("forceReplace: forceReplace"));
             } catch (Exception e) {
-                PrettyPrinter.error("Invalid arguments");
+                PrettyPrinter.error("Invalid arguments: forceReplace");
                 printUsage();
                 return false;
             }
@@ -100,12 +102,48 @@ public class MainApplication implements CommandLineRunner {
             try {
                 int maxThreads = Integer.parseInt(properties.getProperty("maxThreads"));
                 if (maxThreads < 1) {
-                    PrettyPrinter.error("Invalid arguments");
+                    PrettyPrinter.error("Invalid arguments: maxThreads");
                     printUsage();
                     return false;
                 }
             } catch (Exception e) {
-                PrettyPrinter.error("Invalid arguments");
+                PrettyPrinter.error("Invalid arguments: maxThreads");
+                printUsage();
+                return false;
+            }
+        }
+
+        if (!properties.containsKey("startYear")) {
+            properties.put("startYear", "0");
+            PrettyPrinter.info("--startYear={}", properties.getProperty("startYear"));
+        } else {
+            try {
+                int startYear = Integer.parseInt(properties.getProperty("startYear"));
+                if (startYear < 0) {
+                    PrettyPrinter.error("Invalid arguments: startYear");
+                    printUsage();
+                    return false;
+                }
+            } catch (Exception e) {
+                PrettyPrinter.error("Invalid arguments: startYear");
+                printUsage();
+                return false;
+            }
+        }
+
+        if (!properties.containsKey("endYear")) {
+            properties.put("endYear", "0");
+            PrettyPrinter.info("--endYear={}", properties.getProperty("endYear"));
+        } else {
+            try {
+                int startYear = Integer.parseInt(properties.getProperty("endYear"));
+                if (startYear < 0) {
+                    PrettyPrinter.error("Invalid arguments: endYear");
+                    printUsage();
+                    return false;
+                }
+            } catch (Exception e) {
+                PrettyPrinter.error("Invalid arguments: endYear");
                 printUsage();
                 return false;
             }
@@ -115,7 +153,7 @@ public class MainApplication implements CommandLineRunner {
     }
 
     private void printUsage() {
-        String msg = "Usage: java -Xms512M -Xmx1024M -jar ajhr.jar [--srcDir=folder] [--destDir=folder] [--forceReplace=true] [--maxThreads=5]";
+        String msg = "Usage: java -Xms512M -Xmx1024M -jar ajhr.jar [--srcDir=folder] [--destDir=folder] [--forceReplace=true] [--maxThreads=5] [--startYear=0] [--endYear=9999]";
         PrettyPrinter.info(msg);
     }
 }

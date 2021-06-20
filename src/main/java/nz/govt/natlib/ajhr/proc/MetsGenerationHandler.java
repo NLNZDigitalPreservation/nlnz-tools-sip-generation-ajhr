@@ -72,27 +72,6 @@ public class MetsGenerationHandler {
 
         String metsXml = createMetsXmlAndCopyStreams();
 
-//        boolean retVal;
-//        File pmSourceFolder = AJHRUtils.combinePath(this.subFolder, PRESERVATION_MASTER_FOLDER);
-//        File pmTargetContentStreamFolder = AJHRUtils.combinePath(targetRootLocation, PRESERVATION_MASTER_STREAM_FOLDER);
-//        retVal = copyDirectory(pmSourceFolder, pmTargetContentStreamFolder);
-//        if (!retVal) {
-//            log.error("Failed to copy folder: {} -> {}", pmSourceFolder.getAbsolutePath(), pmTargetContentStreamFolder.getAbsolutePath());
-//            return MetadataRetVal.FAIL;
-//        } else {
-//            log.debug("Copy folder: {} -> {}", pmSourceFolder.getAbsolutePath(), pmTargetContentStreamFolder.getAbsolutePath());
-//        }
-//
-//        File mmSourceFolder = AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER);
-//        File mmTargetContentStreamFolder = AJHRUtils.combinePath(targetRootLocation, MODIFIED_MASTER_STREAM_FOLDER);
-//        retVal = copyDirectory(mmSourceFolder, mmTargetContentStreamFolder);
-//        if (!retVal) {
-//            log.error("Failed to copy folder: {} -> {}", mmSourceFolder.getAbsolutePath(), mmTargetContentStreamFolder.getAbsolutePath());
-//            return MetadataRetVal.FAIL;
-//        } else {
-//            log.debug("Copy folder: {} -> {}", mmSourceFolder.getAbsolutePath(), mmTargetContentStreamFolder.getAbsolutePath());
-//        }
-
         //Write mets xml
         File targetMetsXmlFile = AJHRUtils.combinePath(this.targetRootLocation, "content", "mets.xml");
         FileUtils.writeStringToFile(targetMetsXmlFile, metsXml, StandardCharsets.UTF_8);

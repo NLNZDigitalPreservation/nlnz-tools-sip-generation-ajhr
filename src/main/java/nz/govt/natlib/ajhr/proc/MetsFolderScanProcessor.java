@@ -4,6 +4,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import nz.govt.natlib.ajhr.metadata.MetadataMetProp;
 import nz.govt.natlib.ajhr.metadata.MetadataRetVal;
+import nz.govt.natlib.ajhr.metadata.ResultOverview;
 import nz.govt.natlib.ajhr.util.PrettyPrinter;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -11,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-//import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
@@ -24,11 +24,14 @@ public class MetsFolderScanProcessor {
     private String srcDir;
     private String destDir;
     private boolean isForcedReplaced;
+    private int startYear = 0, endYear = 9999;
     @Autowired
     private MetsTemplateService metsTemplateService;
 
     private Semaphore semaphore;
     private Template metsTemplate;
+
+    private final ResultOverview overview = new ResultOverview();
 
     public void init() {
         semaphore = new Semaphore(maxThreads);
@@ -37,6 +40,7 @@ public class MetsFolderScanProcessor {
         } catch (IOException e) {
             log.error("Failed to generate SIP:", e);
         }
+        overview.clear();
     }
 
     public void walkSourceFolder() throws InterruptedException, IOException {
@@ -65,6 +69,10 @@ public class MetsFolderScanProcessor {
         _walkSourceFolder(new File(srcDir));
 
         semaphore.acquire(maxThreads);
+
+        String resultInfo = overview.getSummaryInfo();
+        PrettyPrinter.println(resultInfo);
+        overview.clear();
     }
 
     private void _walkSourceFolder(File directory) throws InterruptedException {
@@ -120,6 +128,8 @@ public class MetsFolderScanProcessor {
                         }
 
                         PrettyPrinter.printResult(retVal, subFolder.getAbsolutePath());
+
+                        overview.addResultItem(retVal, subFolder);
                     } finally {
                         semaphore.release();
                     }
@@ -138,7 +148,13 @@ public class MetsFolderScanProcessor {
 
     public boolean isValidRootFolder(File directory) {
         MetadataMetProp metProp = MetadataMetProp.getInstance(directory.getName(), "");
-        return metProp != null;
+        if (metProp == null) {
+            return false;
+        }
+
+        int year = Integer.parseInt(metProp.getYear());
+
+        return year >= this.startYear && year <= this.endYear;
     }
 
     public int getMaxThreads() {
@@ -171,5 +187,21 @@ public class MetsFolderScanProcessor {
 
     public void setForcedReplaced(boolean forcedReplaced) {
         isForcedReplaced = forcedReplaced;
+    }
+
+    public int getStartYear() {
+        return startYear;
+    }
+
+    public void setStartYear(int startYear) {
+        this.startYear = startYear;
+    }
+
+    public int getEndYear() {
+        return endYear;
+    }
+
+    public void setEndYear(int endYear) {
+        this.endYear = endYear;
     }
 }

@@ -1,5 +1,6 @@
-package nz.govt.natlib.ajhr.proc;
+package nz.govt.natlib.ajhr.proc.ajhr;
 
+import nz.govt.natlib.ajhr.proc.MetsTemplateService;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -8,13 +9,13 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.io.File;
 import java.io.IOException;
 
-public class MetsFolderScanProcessorTests {
+public class AJHRMetsFolderScanProcessorTests {
     private static final String ROOT_FOLDER = "C:\\Users\\leefr\\workspace\\tmp";
-    private static MetsFolderScanProcessor processor;
+    private static AJHRMetsFolderScanProcessor processor;
 
     @BeforeAll
     public static void init() {
-        processor = new MetsFolderScanProcessor();
+        processor = new AJHRMetsFolderScanProcessor();
         ReflectionTestUtils.setField(processor, "maxThreads", 5);
         ReflectionTestUtils.setField(processor, "srcDir", new File(ROOT_FOLDER, "AJHR_ORIGINAL").getAbsolutePath());
         ReflectionTestUtils.setField(processor, "destDir", new File(ROOT_FOLDER, "AJHR_TEST").getAbsolutePath());

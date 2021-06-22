@@ -1,18 +1,19 @@
-package nz.govt.natlib.ajhr.proc;
+package nz.govt.natlib.ajhr.proc.ajhr;
 
+import nz.govt.natlib.ajhr.proc.ajhr.AJHRMetsAtomicFileHandler;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
-public class MetsAtomicFileHandlerTests {
+public class AJHRMetsAtomicFileHandlerTests {
 
     @Test
     public void testDigestOfficial() throws IOException, NoSuchAlgorithmException {
         File f = new File("src/test/resources/image.tif");
 
-        MetsAtomicFileHandler testInstance = new MetsAtomicFileHandler(f);
+        AJHRMetsAtomicFileHandler testInstance = new AJHRMetsAtomicFileHandler(f);
 
         boolean retVal = testInstance.md5Digest();
         assert retVal;

@@ -1,10 +1,11 @@
-package nz.govt.natlib.ajhr.proc;
+package nz.govt.natlib.ajhr.proc.ajhr;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import nz.govt.natlib.ajhr.metadata.MetadataMetProp;
 import nz.govt.natlib.ajhr.metadata.MetadataSipItem;
-import nz.govt.natlib.ajhr.util.AJHRUtils;
+import nz.govt.natlib.ajhr.proc.MetsTemplateService;
+import nz.govt.natlib.ajhr.util.MetsUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -14,26 +15,26 @@ import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
-public class MetsGenerationHandlerTests {
+public class AJHRMetsGenerationHandlerTests {
     private static final String ROOT_FOLDER = "C:\\Users\\leefr\\workspace\\tmp";
-    private static MetsGenerationHandler testInstance;
+    private static AJHRMetsGenerationHandler testInstance;
 
     @BeforeAll
     public static void init() throws IOException {
-        MetsTemplateService metsTemplateService = new MetsTemplateService();
-        Template template = metsTemplateService.loadTemplate();
+        MetsTemplateService MetsTemplateService = new MetsTemplateService();
+        Template template = MetsTemplateService.loadTemplate();
 
         File rootFolder = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G");
         File subFolder = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01");
         String targetFolder = new File(ROOT_FOLDER, "AJHR_TEST").getAbsolutePath();
-        testInstance = new MetsGenerationHandler(template, rootFolder, subFolder, targetFolder, true);
+        testInstance = new AJHRMetsGenerationHandler(template, rootFolder, subFolder, targetFolder, true);
     }
 
     @Test
     public void testProcess() throws IOException, TemplateException, NoSuchAlgorithmException {
         testInstance.process();
 
-        File targetStreamFolder = AJHRUtils.combinePath(testInstance.getTargetRootLocation(), "content", "streams");
+        File targetStreamFolder = MetsUtils.combinePath(testInstance.getDestFolder(), "content", "streams");
         assert targetStreamFolder.exists();
         assert targetStreamFolder.isDirectory();
     }
@@ -48,7 +49,7 @@ public class MetsGenerationHandlerTests {
 
     @Test
     public void testParseMetProp() {
-        MetadataMetProp metProp = MetadataMetProp.getInstance(testInstance.getRootDirectory().getName(), testInstance.getSubFolder().getName());
+        MetadataMetProp metProp = MetadataMetProp.getInstance(testInstance.getRootDirectory().getName(), testInstance.getSrcFolder().getName());
         assert metProp != null;
         assert metProp.getTitle().equals("AJHR");
         assert metProp.getYear().equals("1861");

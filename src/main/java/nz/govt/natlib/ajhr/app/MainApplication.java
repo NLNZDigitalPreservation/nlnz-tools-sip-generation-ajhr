@@ -1,6 +1,7 @@
 package nz.govt.natlib.ajhr.app;
 
-import nz.govt.natlib.ajhr.proc.MetsFolderScanProcessor;
+import nz.govt.natlib.ajhr.proc.ajhr.AJHRMetsFolderScanProcessor;
+import nz.govt.natlib.ajhr.proc.redeposit.RedepositIEFolderScanProcessor;
 import nz.govt.natlib.ajhr.util.MultiThreadsPrint;
 import nz.govt.natlib.ajhr.util.PrettyPrinter;
 import org.slf4j.Logger;
@@ -12,7 +13,6 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
-import java.util.Arrays;
 import java.util.Properties;
 
 @SpringBootApplication
@@ -23,7 +23,9 @@ public class MainApplication implements CommandLineRunner {
 
     private final Properties properties = new Properties();
     @Autowired
-    private MetsFolderScanProcessor processor;
+    private AJHRMetsFolderScanProcessor metsGenerationProcessor;
+    @Autowired
+    private RedepositIEFolderScanProcessor redepositIEFolderScanProcessor;
 
     public static void main(String[] args) {
         SpringApplication.run(MainApplication.class, args);
@@ -33,122 +35,13 @@ public class MainApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
         MultiThreadsPrint.init();
 
-        PrettyPrinter.info("Start processing, input arguments:");
-        if (args.length == 0 || args[0].equalsIgnoreCase("--h")) {
-            printUsage();
-        }
-        Arrays.stream(args).forEach(PrettyPrinter::info);
-        boolean rstParseArguments = parseArguments(args);
-        if (rstParseArguments) {
-            PrettyPrinter.info("Succeed to parse arguments");
-            processor.setSrcDir(properties.getProperty("srcDir"));
-            processor.setDestDir(properties.getProperty("destDir"));
-            processor.setForcedReplaced(Boolean.parseBoolean(properties.getProperty("forceReplace")));
-            processor.setMaxThreads(Integer.parseInt(properties.getProperty("maxThreads")));
-            processor.setStartYear(Integer.parseInt(properties.getProperty("startYear")));
-            processor.setEndYear(Integer.parseInt(properties.getProperty("endYear")));
-            processor.init();
-            processor.walkSourceFolder();
-            PrettyPrinter.info(log, "Finished");
-            MultiThreadsPrint.close();
-        }
-    }
+        PrettyPrinter.info("Start processing");
+        metsGenerationProcessor.walkSourceFolder();
 
-    private boolean parseArguments(String... args) {
-        for (String arg : args) {
-            String[] items = arg.split("=");
-            if (items.length != 2) {
-                PrettyPrinter.error("Invalid arguments");
-                printUsage();
-                return false;
-            }
+        redepositIEFolderScanProcessor.process();
 
-            String key = items[0].trim(), value = items[1].trim();
-            if (!key.startsWith("--")) {
-                PrettyPrinter.error("Invalid arguments: " + key);
-                printUsage();
-                return false;
-            }
-
-            key = key.substring(2); //killed prefix --
-
-            properties.put(key, value);
-        }
-
-        if (!properties.containsKey("srcDir") || !properties.containsKey("destDir")) {
-            PrettyPrinter.error("Invalid arguments: srcDir or destDir");
-            printUsage();
-            return false;
-        }
-
-        if (!properties.containsKey("forceReplace")) {
-            properties.put("forceReplace", "true");
-            PrettyPrinter.info("--forceReplace={}", properties.getProperty("forceReplace"));
-        } else {
-            try {
-                Boolean.parseBoolean(properties.getProperty("forceReplace: forceReplace"));
-            } catch (Exception e) {
-                PrettyPrinter.error("Invalid arguments: forceReplace");
-                printUsage();
-                return false;
-            }
-        }
-
-        if (!properties.containsKey("maxThreads")) {
-            properties.put("maxThreads", "1");
-            PrettyPrinter.info("--maxThreads={}", properties.getProperty("maxThreads"));
-        } else {
-            try {
-                int maxThreads = Integer.parseInt(properties.getProperty("maxThreads"));
-                if (maxThreads < 1) {
-                    PrettyPrinter.error("Invalid arguments: maxThreads");
-                    printUsage();
-                    return false;
-                }
-            } catch (Exception e) {
-                PrettyPrinter.error("Invalid arguments: maxThreads");
-                printUsage();
-                return false;
-            }
-        }
-
-        if (!properties.containsKey("startYear")) {
-            properties.put("startYear", "0");
-            PrettyPrinter.info("--startYear={}", properties.getProperty("startYear"));
-        } else {
-            try {
-                int startYear = Integer.parseInt(properties.getProperty("startYear"));
-                if (startYear < 0) {
-                    PrettyPrinter.error("Invalid arguments: startYear");
-                    printUsage();
-                    return false;
-                }
-            } catch (Exception e) {
-                PrettyPrinter.error("Invalid arguments: startYear");
-                printUsage();
-                return false;
-            }
-        }
-
-        if (!properties.containsKey("endYear")) {
-            properties.put("endYear", "0");
-            PrettyPrinter.info("--endYear={}", properties.getProperty("endYear"));
-        } else {
-            try {
-                int startYear = Integer.parseInt(properties.getProperty("endYear"));
-                if (startYear < 0) {
-                    PrettyPrinter.error("Invalid arguments: endYear");
-                    printUsage();
-                    return false;
-                }
-            } catch (Exception e) {
-                PrettyPrinter.error("Invalid arguments: endYear");
-                printUsage();
-                return false;
-            }
-        }
-
-        return true;
+        PrettyPrinter.info(log, "Finished");
+        MultiThreadsPrint.close();
     }
 
     private void printUsage() {

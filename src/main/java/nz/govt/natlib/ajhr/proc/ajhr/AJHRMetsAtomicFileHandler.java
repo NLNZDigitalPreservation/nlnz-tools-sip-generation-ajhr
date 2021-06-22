@@ -1,4 +1,4 @@
-package nz.govt.natlib.ajhr.proc;
+package nz.govt.natlib.ajhr.proc.ajhr;
 
 import nz.govt.natlib.ajhr.util.MultiThreadsPrint;
 import org.apache.commons.codec.binary.Hex;
@@ -8,19 +8,19 @@ import java.io.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class MetsAtomicFileHandler {
+public class AJHRMetsAtomicFileHandler {
     private static final int STREAM_BUFFER_LENGTH = 1024 * 16;
     private final File srcFile;
     private final File destFile;
 
     private String digestString;
 
-    public MetsAtomicFileHandler(File srcFile) {
+    public AJHRMetsAtomicFileHandler(File srcFile) {
         this.srcFile = srcFile;
         this.destFile = new File(FileUtils.getTempDirectory(), srcFile.getName());
     }
 
-    public MetsAtomicFileHandler(File srcFile, File destFile) {
+    public AJHRMetsAtomicFileHandler(File srcFile, File destFile) {
         this.srcFile = srcFile;
         this.destFile = destFile;
     }

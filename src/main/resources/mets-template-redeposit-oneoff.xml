@@ -1,0 +1,146 @@
+<mets:mets xmlns:mets="http://www.loc.gov/METS/">
+    <mets:dmdSec ID="ie-dmd">
+        <mets:mdWrap MDTYPE="DC">
+            <mets:xmlData>
+                <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+                    <dc:language>en-nz</dc:language>
+                    <dc:title>${metProp.dcTitle}</dc:title>
+                </dc:record>
+            </mets:xmlData>
+        </mets:mdWrap>
+    </mets:dmdSec>
+    <mets:amdSec ID="ie-amd">
+        <mets:techMD ID="ie-amd-tech">
+            <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
+                <mets:xmlData>
+                    <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
+                        <section id="generalIECharacteristics">
+                            <record>
+                                <key id="submissionReason">NDHA_redeposit</key>
+                                <key id="IEEntityType">OneOffIE</key>
+                            </record>
+                        </section>
+                        <section id="objectIdentifer">
+                            <record>
+                                <key id="objectIdentifierType">ALMAMMS</key>
+                                <key id="objectIdentifierValue">${metProp.almaMms}</key>
+                            </record>
+                        </section>
+                    </dnx>
+                </mets:xmlData>
+            </mets:mdWrap>
+        </mets:techMD>
+        <mets:rightsMD ID="ie-amd-rights">
+            <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
+                <mets:xmlData>
+                    <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
+                        <section id="accessRightsPolicy">
+                            <record>
+                                <key id="policyId">${metProp.policyId}</key>
+                            </record>
+                        </section>
+                    </dnx>
+                </mets:xmlData>
+            </mets:mdWrap>
+        </mets:rightsMD>
+        <mets:digiprovMD ID="ie-amd-digiprov">
+            <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
+                <mets:xmlData>
+                    <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
+                        <section id="event">
+                            <record>
+                                <key id="eventIdentifierType">Redeposit</key>
+                                <key id="eventIdentifierValue">Redeposit_01</key>
+                                <key id="eventType">CREATION</key>
+                                <key id="eventDescription">Provenance Note for Content Redeposit</key>
+                                <key id="eventDateTime">Date of SIP generation</key>
+                                <key id="eventOutcome1">SUCCESS</key>
+                                <key id="eventOutcomeDetail1">Content redeposited to correct Structure Map ID errors.</key>
+                                <key id="event Outcome Detail Extension1">${metProp.ieCreationDate}</key>
+                            </record>
+                        </section>
+                    </dnx>
+                </mets:xmlData>
+            </mets:mdWrap>
+        </mets:digiprovMD>
+    </mets:amdSec>
+    <mets:amdSec ID="rep1-amd">
+        <mets:techMD ID="rep1-amd-tech">
+            <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
+                <mets:xmlData>
+                    <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
+                        <section id="generalRepCharacteristics">
+                            <record>
+                                <key id="preservationType">PRESERVATION_MASTER</key>
+                                <key id="usageType">VIEW</key>
+                                <key id="DigitalOriginal">True</key>
+                                <key id="RevisionNumber">1</key>
+                            </record>
+                        </section>
+                    </dnx>
+                </mets:xmlData>
+            </mets:mdWrap>
+        </mets:techMD>
+        <mets:rightsMD ID="rep1-amd-rights">
+            <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
+                <mets:xmlData>
+                    <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
+                </mets:xmlData>
+            </mets:mdWrap>
+        </mets:rightsMD>
+        <mets:sourceMD ID="rep1-amd-source">
+            <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
+                <mets:xmlData>
+                    <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
+                </mets:xmlData>
+            </mets:mdWrap>
+        </mets:sourceMD>
+        <mets:digiprovMD ID="rep1-amd-digiprov">
+            <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
+                <mets:xmlData>
+                    <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
+                </mets:xmlData>
+            </mets:mdWrap>
+        </mets:digiprovMD>
+    </mets:amdSec>
+
+    <#list pmList as pm>
+    <mets:amdSec ID="fid${pm.fileId}-1-amd">
+        <mets:techMD ID="fid${pm.fileId}-1-amd-tech">
+            <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
+                <mets:xmlData>
+                    <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
+                        <section id="generalFileCharacteristics">
+                            <record>
+                                <key id="fileOriginalName">${pm.fileOriginalName}</key>
+                                <key id="label">${pm.label}</key>
+                            </record>
+                        </section>
+                    </dnx>
+                </mets:xmlData>
+            </mets:mdWrap>
+        </mets:techMD>
+        <mets:rightsMD ID="fid${pm.fileId}-1-amd-rights">
+            <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
+                <mets:xmlData>
+                    <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
+                </mets:xmlData>
+            </mets:mdWrap>
+        </mets:rightsMD>
+        <mets:sourceMD ID="fid${pm.fileId}-1-amd-source">
+            <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
+                <mets:xmlData>
+                    <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
+                </mets:xmlData>
+            </mets:mdWrap>
+        </mets:sourceMD>
+        <mets:digiprovMD ID="fid${pm.fileId}-1-amd-digiprov">
+            <mets:mdWrap MDTYPE="OTHER" OTHERMDTYPE="dnx">
+                <mets:xmlData>
+                    <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx"/>
+                </mets:xmlData>
+            </mets:mdWrap>
+        </mets:digiprovMD>
+    </mets:amdSec>
+</#list>
+</mets:mets>

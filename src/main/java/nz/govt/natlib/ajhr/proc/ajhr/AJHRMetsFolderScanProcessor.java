@@ -1,39 +1,44 @@
-package nz.govt.natlib.ajhr.proc;
+package nz.govt.natlib.ajhr.proc.ajhr;
 
 import freemarker.template.Template;
-import freemarker.template.TemplateException;
 import nz.govt.natlib.ajhr.metadata.MetadataMetProp;
 import nz.govt.natlib.ajhr.metadata.MetadataRetVal;
 import nz.govt.natlib.ajhr.metadata.ResultOverview;
+import nz.govt.natlib.ajhr.proc.MetsTemplateService;
 import nz.govt.natlib.ajhr.util.PrettyPrinter;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+
 
 import java.io.File;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Semaphore;
 
-@Service
-public class MetsFolderScanProcessor {
-    private static final Logger log = LoggerFactory.getLogger(MetsFolderScanProcessor.class);
+public class AJHRMetsFolderScanProcessor {
+    private static final Logger log = LoggerFactory.getLogger(AJHRMetsFolderScanProcessor.class);
+
+    private final boolean isEnable;
     private int maxThreads = 1;
-    private String srcDir;
-    private String destDir;
-    private boolean isForcedReplaced;
+    private final String srcDir;
+    private final String destDir;
+    private final boolean isForcedReplaced;
     private int startYear = 0, endYear = 9999;
-    @Autowired
-    private MetsTemplateService metsTemplateService;
 
-    private Semaphore semaphore;
-    private Template metsTemplate;
-
+    private final Semaphore semaphore;
     private final ResultOverview overview = new ResultOverview();
 
-    public void init() {
+    private Template metsTemplate;
+
+    public AJHRMetsFolderScanProcessor(boolean isEnable, String srcDir, String destDir, int maxThreads, boolean isForcedReplaced, int startYear, int endYear, MetsTemplateService metsTemplateService) {
+        this.isEnable = isEnable;
+        this.srcDir = srcDir;
+        this.destDir = destDir;
+        this.maxThreads = maxThreads;
+        this.isForcedReplaced = isForcedReplaced;
+        this.startYear = startYear;
+        this.endYear = endYear;
+
         semaphore = new Semaphore(maxThreads);
         try {
             metsTemplate = metsTemplateService.loadTemplate();
@@ -41,9 +46,15 @@ public class MetsFolderScanProcessor {
             log.error("Failed to generate SIP:", e);
         }
         overview.clear();
+
     }
 
     public void walkSourceFolder() throws InterruptedException, IOException {
+        if (!isEnable) {
+            PrettyPrinter.info(log, "AJHR processing is disabled.");
+            return;
+        }
+
         if (this.isForcedReplaced) {
             File fDestDir = new File(this.destDir);
             if (fDestDir.exists()) {
@@ -120,9 +131,9 @@ public class MetsFolderScanProcessor {
                             try {
                                 tryTimes--;
                                 log.debug("Found valid subfolder: {}", subFolder.getAbsolutePath());
-                                MetsGenerationHandler generationProcessor = new MetsGenerationHandler(metsTemplate, directory, subFolder, destDir, isForcedReplaced);
+                                AJHRMetsGenerationHandler generationProcessor = new AJHRMetsGenerationHandler(metsTemplate, directory, subFolder, destDir, isForcedReplaced);
                                 retVal = generationProcessor.process();
-                            } catch (TemplateException | IOException | NoSuchAlgorithmException e) {
+                            } catch (IOException e) {
                                 log.error("Failed to generate SIP for: {}", subFolder.getAbsolutePath(), e);
                             }
                         }
@@ -140,8 +151,8 @@ public class MetsFolderScanProcessor {
     }
 
     public boolean isValidSubFolder(File directory) {
-        File pmFolder = new File(directory, MetsGenerationHandler.PRESERVATION_MASTER_FOLDER);
-        File mmFolder = new File(directory, MetsGenerationHandler.MODIFIED_MASTER_FOLDER);
+        File pmFolder = new File(directory, AJHRMetsGenerationHandler.PRESERVATION_MASTER_FOLDER);
+        File mmFolder = new File(directory, AJHRMetsGenerationHandler.MODIFIED_MASTER_FOLDER);
 
         return pmFolder.exists() && pmFolder.isDirectory() && mmFolder.exists() && mmFolder.isDirectory();
     }
@@ -155,53 +166,5 @@ public class MetsFolderScanProcessor {
         int year = Integer.parseInt(metProp.getYear());
 
         return year >= this.startYear && year <= this.endYear;
-    }
-
-    public int getMaxThreads() {
-        return maxThreads;
-    }
-
-    public void setMaxThreads(int maxThreads) {
-        this.maxThreads = maxThreads;
-    }
-
-    public String getSrcDir() {
-        return srcDir;
-    }
-
-    public void setSrcDir(String srcDir) {
-        this.srcDir = srcDir;
-    }
-
-    public String getDestDir() {
-        return destDir;
-    }
-
-    public void setDestDir(String destDir) {
-        this.destDir = destDir;
-    }
-
-    public boolean isForcedReplaced() {
-        return isForcedReplaced;
-    }
-
-    public void setForcedReplaced(boolean forcedReplaced) {
-        isForcedReplaced = forcedReplaced;
-    }
-
-    public int getStartYear() {
-        return startYear;
-    }
-
-    public void setStartYear(int startYear) {
-        this.startYear = startYear;
-    }
-
-    public int getEndYear() {
-        return endYear;
-    }
-
-    public void setEndYear(int endYear) {
-        this.endYear = endYear;
     }
 }

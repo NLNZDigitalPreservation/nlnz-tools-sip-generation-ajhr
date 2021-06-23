@@ -6,20 +6,18 @@ import nz.govt.natlib.ajhr.metadata.MetadataSipItem;
 import nz.govt.natlib.ajhr.metadata.RedepositIeDTO;
 import nz.govt.natlib.ajhr.proc.AbstractMetsGenerationHandler;
 import nz.govt.natlib.ajhr.util.MetsUtils;
-import org.apache.commons.io.FileUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import nz.govt.natlib.ajhr.util.MultiThreadsPrint;
+import nz.govt.natlib.ajhr.util.PrettyPrinter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.ui.ModelMap;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.StringWriter;
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHandler {
-    private static final Logger log = LoggerFactory.getLogger(RedepositIEMetsGenerationHandler.class);
+    private static final int STREAM_BUFFER_LENGTH = 1024 * 16;
     private final RedepositIeDTO redepositIeDTO;
 
     public RedepositIEMetsGenerationHandler(Template metTemplate, String srcFolder, String destFolder, RedepositIeDTO redepositIeDTO, boolean replaceFlag) {
@@ -37,7 +35,7 @@ public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHand
 
         File pmFolder = MetsUtils.combinePath(this.srcFolder, PRESERVATION_MASTER_FOLDER);
         if (pmFolder.exists()) {
-            FileUtils.copyDirectory(pmFolder, MetsUtils.combinePath(this.destFolder, PRESERVATION_MASTER_STREAM_FOLDER));
+            this.copyDirectory(pmFolder, MetsUtils.combinePath(this.destFolder, PRESERVATION_MASTER_STREAM_FOLDER));
             List<MetadataSipItem> pmList = handleFiles(MetsUtils.combinePath(this.srcFolder, PRESERVATION_MASTER_FOLDER));
             if (pmList.size() != redepositIeDTO.getNumFiles()) {
                 throw new IOException("The number of files in the folder does not match the number in the sheet: " + pmFolder.getAbsolutePath());
@@ -49,7 +47,7 @@ public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHand
 
         File mmFolder = MetsUtils.combinePath(this.srcFolder, MODIFIED_MASTER_FOLDER);
         if (mmFolder.exists()) {
-            FileUtils.copyDirectory(mmFolder, MetsUtils.combinePath(this.destFolder, MODIFIED_MASTER_FOLDER));
+            this.copyDirectory(mmFolder, MetsUtils.combinePath(this.destFolder, MODIFIED_MASTER_FOLDER));
             List<MetadataSipItem> mmList = handleFiles(MetsUtils.combinePath(this.srcFolder, MODIFIED_MASTER_FOLDER));
             model.addAttribute("mmList", mmList);
         } else {
@@ -93,4 +91,58 @@ public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHand
         return list;
     }
 
+    public boolean copyDirectory(File srcSubFolder, File destSubFolder) {
+        File[] files = srcSubFolder.listFiles();
+        if (files == null) {
+            return false;
+        }
+
+        if (!destSubFolder.exists() && !destSubFolder.mkdirs()) {
+            return false;
+        }
+
+        for (File f : files) {
+            boolean copyRstVal = false;
+            try {
+                copyRstVal = copyFile(f, new File(destSubFolder, f.getName()));
+            } catch (IOException e) {
+                PrettyPrinter.error(log, "Failed to copy file: {} -> {} ", ExceptionUtils.getStackTrace(e));
+                return false;
+            }
+            if (!copyRstVal) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean copyFile(File srcFile, File destFile) throws IOException {
+        InputStream inputStream = new BufferedInputStream(new FileInputStream(srcFile));
+        OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(destFile));
+
+        final byte[] buffer = new byte[STREAM_BUFFER_LENGTH];
+        int read = inputStream.read(buffer, 0, STREAM_BUFFER_LENGTH);
+        double lenTotal = srcFile.length(), lenCurrentRead = 0;
+
+        String msg = String.format("%s [%.2f%s]", srcFile.getAbsolutePath(), lenCurrentRead * 100 / lenTotal, "%");
+        String key = MultiThreadsPrint.putUnFinished(msg);
+        while (read > -1) {
+            outputStream.write(buffer, 0, read);
+
+            lenCurrentRead += read;
+
+            msg = String.format("%s [%.2f%s]", srcFile.getAbsolutePath(), lenCurrentRead * 100 / lenTotal, "%");
+            MultiThreadsPrint.putUnFinished(key, msg);
+
+            read = inputStream.read(buffer, 0, STREAM_BUFFER_LENGTH);
+        }
+
+        outputStream.close();
+        inputStream.close();
+
+        msg = String.format("%s 100%s size=%d", srcFile.getAbsolutePath(), "%", (long) lenTotal);
+        MultiThreadsPrint.putFinished(key, msg);
+
+        return true;
+    }
 }

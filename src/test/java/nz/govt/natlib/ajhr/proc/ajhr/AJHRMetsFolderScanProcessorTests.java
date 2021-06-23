@@ -15,13 +15,9 @@ public class AJHRMetsFolderScanProcessorTests {
 
     @BeforeAll
     public static void init() {
-        processor = new AJHRMetsFolderScanProcessor();
-        ReflectionTestUtils.setField(processor, "maxThreads", 5);
-        ReflectionTestUtils.setField(processor, "srcDir", new File(ROOT_FOLDER, "AJHR_ORIGINAL").getAbsolutePath());
-        ReflectionTestUtils.setField(processor, "destDir", new File(ROOT_FOLDER, "AJHR_TEST").getAbsolutePath());
-        ReflectionTestUtils.setField(processor, "isForcedReplaced", true);
-        ReflectionTestUtils.setField(processor, "metsTemplateService", new MetsTemplateService());
-        processor.init();
+        String srcDir = new File(ROOT_FOLDER, "AJHR_ORIGINAL").getAbsolutePath();
+        String destDir = new File(ROOT_FOLDER, "AJHR_TEST").getAbsolutePath();
+        processor = new AJHRMetsFolderScanProcessor(true, srcDir, destDir, 5, true, 0, 9999, new MetsTemplateService());
     }
 
     @Test

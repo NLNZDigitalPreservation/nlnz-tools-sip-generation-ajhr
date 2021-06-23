@@ -7,6 +7,7 @@ import nz.govt.natlib.ajhr.metadata.ResultOverview;
 import nz.govt.natlib.ajhr.proc.MetsTemplateService;
 import nz.govt.natlib.ajhr.util.MetsUtils;
 import nz.govt.natlib.ajhr.util.PrettyPrinter;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,19 +23,15 @@ public class RedepositIEFolderScanProcessor {
 
     private MetsTemplateService MetsTemplateService;
 
-    private List<RedepositIEEndPoint> endPoints = new ArrayList<>();
+    private final List<RedepositIEEndPoint> endPoints = new ArrayList<>();
 
     public void process() {
         for (RedepositIEEndPoint endPoint : endPoints) {
-            try {
-                process(endPoint);
-            } catch (IOException e) {
-                log.error("Failed to process [{}]", endPoint.getSheetName(), e);
-            }
+            process(endPoint);
         }
     }
 
-    public void process(RedepositIEEndPoint endPoint) throws IOException {
+    public void process(RedepositIEEndPoint endPoint) {
         if (!endPoint.isEnable()) {
             PrettyPrinter.info("[{}] is disabled, skipped", endPoint.getSheetName());
             return;
@@ -44,10 +41,10 @@ public class RedepositIEFolderScanProcessor {
         final List<RedepositIeDTO> metaDataList;
         final Map<String, RedepositIeDTO> metaDataMap = new HashMap<>();
         try {
-            metaDataList = RedepositIESheetsParser.parse(endPoint.getSheetName());
+            metaDataList = RedepositIESheetsParser.parse(endPoint.getSheetName(), endPoint.isMultipleRowsExtension());
 
             metaDataList.forEach(dto -> {
-                metaDataMap.put(dto.getOriginalPID(), dto);
+                metaDataMap.put(dto.getOriginalPID().trim(), dto);
             });
 
             metaDataList.clear();
@@ -82,10 +79,20 @@ public class RedepositIEFolderScanProcessor {
 
         ResultOverview overview = new ResultOverview();
         for (File srcDir : ieFolders) {
-            RedepositIeDTO ieProp = metaDataMap.get(srcDir.getName());
+            RedepositIeDTO ieProp = metaDataMap.get(srcDir.getName().trim());
+            if (ieProp == null) {
+                PrettyPrinter.error(log, "Failed to get the related value from Excel file: {}", srcDir.getAbsolutePath());
+                overview.addResultItem(MetadataRetVal.FAIL, srcDir);
+                continue;
+            }
             File destDir = MetsUtils.combinePath(endPoint.getDestDir(), srcDir.getName());
-            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(metsTemplate, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), ieProp, endPoint.isReplace());
-            MetadataRetVal retVal = handler.process();
+            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(metsTemplate, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), ieProp, endPoint.isForcedReplaced());
+            MetadataRetVal retVal = MetadataRetVal.FAIL;
+            try {
+                retVal = handler.process();
+            } catch (IOException e) {
+                PrettyPrinter.error(log, "Failed to process: {}, error is: {}", srcDir.getAbsolutePath(), ExceptionUtils.getStackTrace(e));
+            }
             overview.addResultItem(retVal, srcDir);
             PrettyPrinter.printResult(retVal, srcDir.getAbsolutePath());
         }

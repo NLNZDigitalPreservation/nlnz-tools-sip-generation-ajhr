@@ -2,9 +2,12 @@ package nz.govt.natlib.ajhr.proc.redeposit;
 
 import nz.govt.natlib.ajhr.metadata.RedepositIeDTO;
 import nz.govt.natlib.ajhr.metadata.RedepositIeFileDTO;
+import nz.govt.natlib.ajhr.util.PrettyPrinter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -15,9 +18,10 @@ import java.util.List;
 import java.util.Map;
 
 public class RedepositIESheetsParser {
+    public static final Logger log = LoggerFactory.getLogger(RedepositIESheetsParser.class);
     private final static String SHEET_FILE = "Input spreadsheet for redeposit of IE with bad SM Mids.xlsx";
 
-    public static List<RedepositIeDTO> parse(String sheetName) throws IOException {
+    public static List<RedepositIeDTO> parse(String sheetName, boolean isMultipleRowsExtension) throws IOException {
         List<RedepositIeDTO> retVal = new ArrayList<>();
 
         Resource resource = new ClassPathResource(SHEET_FILE);
@@ -56,11 +60,12 @@ public class RedepositIESheetsParser {
 
             //Ignore empty rows
             if (StringUtils.isEmpty(dto.getOriginalPID())) {
+                PrettyPrinter.error(log, "The row is empty, rowNumber: " + rowNum);
                 continue;
             }
 
             int numOfFiles = dto.getNumFiles();
-            if (numOfFiles <= 1) {
+            if (!isMultipleRowsExtension || numOfFiles <= 1) {
                 continue;
             }
 

@@ -6,7 +6,8 @@ public class RedepositIEEndPoint {
     private String destDir;
     private String sheetName;
     private String metsTemplateFileName;
-    private boolean isReplace;
+    private boolean isForcedReplaced;
+    private boolean isMultipleRowsExtension;
 
     public boolean isEnable() {
         return enable;
@@ -48,11 +49,19 @@ public class RedepositIEEndPoint {
         this.metsTemplateFileName = metsTemplateFileName;
     }
 
-    public boolean isReplace() {
-        return isReplace;
+    public boolean isForcedReplaced() {
+        return isForcedReplaced;
     }
 
-    public void setReplace(boolean replace) {
-        isReplace = replace;
+    public void setForcedReplaced(boolean forcedReplaced) {
+        isForcedReplaced = forcedReplaced;
+    }
+
+    public boolean isMultipleRowsExtension() {
+        return isMultipleRowsExtension;
+    }
+
+    public void setMultipleRowsExtension(boolean multipleRowsExtension) {
+        isMultipleRowsExtension = multipleRowsExtension;
     }
 }

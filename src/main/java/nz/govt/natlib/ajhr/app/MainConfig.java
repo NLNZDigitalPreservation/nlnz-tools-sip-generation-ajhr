@@ -19,8 +19,8 @@ public class MainConfig {
     private String destDirAJHR;
     @Value("${AJHR.maxThreads}")
     private int maxThreadsAJHR;
-    @Value("${AJHR.isForcedReloaded}")
-    private boolean isForcedReloadedAJHR;
+    @Value("${AJHR.isForcedReplaced}")
+    private boolean isForcedReplacedAJHR;
     @Value("${AJHR.startYear}")
     private int startYearAJHR;
     @Value("${AJHR.endYear}")
@@ -36,13 +36,17 @@ public class MainConfig {
     private String sheetNameOneoffIE;
     @Value("${OneoffIE.metsTemplate}")
     private String metsTemplateOneoffIE;
+    @Value("${OneoffIE.isForcedReplaced}")
+    private boolean isForcedReplacedOneoffIE;
+    @Value("${OneoffIE.isMultipleRowsExtension}")
+    private boolean isMultipleRowsExtensionOneoffIE;
 
     @Autowired
     private MetsTemplateService metsTemplateService;
 
     @Bean
     public AJHRMetsFolderScanProcessor ajhrMetsFolderScanProcessor() {
-        return new AJHRMetsFolderScanProcessor(enableAJHR, srcDirAJHR, destDirAJHR, maxThreadsAJHR, isForcedReloadedAJHR, startYearAJHR, endYearAJHR, metsTemplateService);
+        return new AJHRMetsFolderScanProcessor(enableAJHR, srcDirAJHR, destDirAJHR, maxThreadsAJHR, isForcedReplacedAJHR, startYearAJHR, endYearAJHR, metsTemplateService);
     }
 
     @Bean
@@ -56,9 +60,10 @@ public class MainConfig {
         endPointOneOffIE.setDestDir(destDirOneoffIE);
         endPointOneOffIE.setSheetName(sheetNameOneoffIE);
         endPointOneOffIE.setMetsTemplateFileName(metsTemplateOneoffIE);
+        endPointOneOffIE.setForcedReplaced(isForcedReplacedOneoffIE);
+        endPointOneOffIE.setMultipleRowsExtension(isMultipleRowsExtensionOneoffIE);
 
         bean.addEndPoint(endPointOneOffIE);
-
         return bean;
     }
 }

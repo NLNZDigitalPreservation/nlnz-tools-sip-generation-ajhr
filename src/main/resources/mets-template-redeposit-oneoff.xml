@@ -3,7 +3,6 @@
         <mets:mdWrap MDTYPE="DC">
             <mets:xmlData>
                 <dc:record xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
-                    <dc:language>en-nz</dc:language>
                     <dc:title>${metProp.dcTitle}</dc:title>
                 </dc:record>
             </mets:xmlData>
@@ -112,8 +111,10 @@
                     <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
                         <section id="generalFileCharacteristics">
                             <record>
-                                <key id="fileOriginalName">${pm.fileOriginalName}</key>
                                 <key id="label">${pm.label}</key>
+                                <key id="fileCreationDate">-</key>
+                                <key id="fileModificationDate">-</key>
+                                <key id="fileOriginalName">${pm.fileOriginalName}</key>
                             </record>
                         </section>
                     </dnx>
@@ -142,5 +143,26 @@
             </mets:mdWrap>
         </mets:digiprovMD>
     </mets:amdSec>
-</#list>
+    </#list>
+
+    <mets:fileSec>
+    <mets:fileGrp ADMID="rep1-amd" ID="rep1" USE="VIEW">
+        <#list pmList as pm>
+        <mets:file ADMID="fid${pm.fileId}-1-amd" CHECKSUM="" CHECKSUMTYPE="" GROUPID="1" ID="fid${pm.fileId}-1" MIMETYPE="">
+            <mets:FLocat LOCTYPE="URL" xlin:href="PM_01/${pm.fileOriginalName}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
+        </mets:file>
+        </#list>
+    </mets:fileGrp>
+    </mets:fileSec>
+    <mets:structMap ID="rep1-1" TYPE="PHYSICAL">
+    <mets:div LABEL="Preservation Master">
+        <mets:div LABEL="Table of Contents">
+            <#list pmList as pm>
+            <mets:div LABEL="${pm.label}" TYPE="FILE">
+                <mets:fptr FILEID="fid${pm.fileId}-1"/>
+            </mets:div>
+            </#list>
+        </mets:div>
+    </mets:div>
+    </mets:structMap>
 </mets:mets>

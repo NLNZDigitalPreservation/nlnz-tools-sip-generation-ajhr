@@ -2,7 +2,11 @@ package nz.govt.natlib.ajhr.metadata;
 
 import nz.govt.natlib.ajhr.util.MetsUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.DataFormatter;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +32,15 @@ public class RedepositIeDTO {
     private String ieDmdMonth;
     private String ieDmdDay;
     private String almaMms; //For OneoffIE
+
+    private String eventDateTime; //The moment when the SIP is generated
+
     private List<RedepositIeFileDTO> files = new ArrayList<>();
+
+    public RedepositIeDTO() {
+        LocalDateTime ldt = LocalDateTime.now();
+        this.eventDateTime = String.format("%s %s %02d %s NZDT %d", ldt.getDayOfWeek().name(), ldt.getMonth().name(), ldt.getDayOfMonth(), ldt.format(DateTimeFormatter.ISO_LOCAL_TIME), ldt.getYear());
+    }
 
     public String getOriginalPID() {
         return originalPID;
@@ -92,7 +104,11 @@ public class RedepositIeDTO {
     }
 
     public void setIeCreationDate(String ieCreationDate) {
-        this.ieCreationDate = ieCreationDate;
+        if (StringUtils.isEmpty(ieCreationDate)) {
+            this.ieCreationDate = "-";
+        } else {
+            this.ieCreationDate = ieCreationDate;
+        }
     }
 
     public String getPreservationType() {
@@ -148,7 +164,11 @@ public class RedepositIeDTO {
     }
 
     public void setFileModificationDate(String fileModificationDate) {
-        this.fileModificationDate = fileModificationDate;
+        if (StringUtils.isEmpty(fileModificationDate)) {
+            this.fileModificationDate = "-";
+        } else {
+            this.fileModificationDate = fileModificationDate;
+        }
     }
 
     public String getModifiedMasterFlag() {
@@ -205,6 +225,21 @@ public class RedepositIeDTO {
 
     public void setFiles(List<RedepositIeFileDTO> files) {
         this.files = files;
+    }
+
+    public String getEventDateTime() {
+        return eventDateTime;
+    }
+
+    public void setEventDateTime(String eventDateTime) {
+        this.eventDateTime = eventDateTime;
+    }
+
+    public void setValue(String key, Cell cell) {
+        DataFormatter formatter = new DataFormatter();
+        String strValue = formatter.formatCellValue(cell);
+
+        setValue(key, strValue);
     }
 
     public void setValue(String key, String value) {

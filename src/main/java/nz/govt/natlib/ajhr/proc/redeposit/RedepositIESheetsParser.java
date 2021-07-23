@@ -53,9 +53,9 @@ public class RedepositIESheetsParser {
                 if (cell == null) {
                     continue;
                 }
+
                 String colKey = headerIndex.get(col);
-                String colValue = cell.toString();
-                dto.setValue(colKey, colValue);
+                dto.setValue(colKey, cell);
             }
 
             //Ignore empty rows

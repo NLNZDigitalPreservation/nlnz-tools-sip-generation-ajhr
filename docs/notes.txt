@@ -1,0 +1,4 @@
+Notes:
+1. Changed the format of creation date: *dd/mm/yyyy -> dd/mm/yyyy
+2. The name of mets is mets.xml
+3. Some year of creadation date is 2 digites.

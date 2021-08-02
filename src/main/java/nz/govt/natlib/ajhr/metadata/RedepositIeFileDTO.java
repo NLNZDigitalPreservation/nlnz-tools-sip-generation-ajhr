@@ -1,10 +1,10 @@
 package nz.govt.natlib.ajhr.metadata;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
-public class RedepositIeFileDTO {
+public class RedepositIeFileDTO extends MetadataSipItem{
     private String originalPID;
-    private String fileName;
     private String fileCreationDate;
     private String fileModificationDate;
 
@@ -14,14 +14,6 @@ public class RedepositIeFileDTO {
 
     public void setOriginalPID(String originalPID) {
         this.originalPID = originalPID;
-    }
-
-    public String getFileName() {
-        return fileName;
-    }
-
-    public void setFileName(String fileName) {
-        this.fileName = fileName;
     }
 
     public String getFileCreationDate() {
@@ -50,7 +42,8 @@ public class RedepositIeFileDTO {
         }
 
         if (key.equalsIgnoreCase("Filename")) {
-            this.setFileName(value);
+            this.setFileOriginalName(value);
+            this.setLabel(FilenameUtils.removeExtension(value));
         }
         if (key.equalsIgnoreCase("File Creation Date")) {
             this.setFileCreationDate(value);

@@ -57,7 +57,13 @@ public class RedepositIEMetsGenerationHandlerTests {
             //Test failed case
             dto.setNumFiles("1");
             RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(template, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), dto, true);
-            MetadataRetVal retVal = handler.process();
+            MetadataRetVal retVal = MetadataRetVal.SUCC;
+
+            try {
+                retVal = handler.process();
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            }
             assert retVal == MetadataRetVal.FAIL;
         }
     }

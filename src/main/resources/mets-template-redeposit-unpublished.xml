@@ -122,10 +122,10 @@
                     <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
                         <section id="generalFileCharacteristics">
                             <record>
-                                <key id="label">>${pm.label}</key>
-                                <key id="fileCreationDate">${metProp.fileCreationDate}</key>
-                                <key id="fileModificationDate">${metProp.fileModificationDate}</key>
-                                <key id="fileOriginalName">>${pm.fileOriginalName}</key>
+                                <key id="label">${pm.label}</key>
+                                <key id="fileCreationDate">${pm.fileCreationDate}</key>
+                                <key id="fileModificationDate">${pm.fileModificationDate}</key>
+                                <key id="fileOriginalName">${pm.fileOriginalName}</key>
                             </record>
                         </section>
                     </dnx>
@@ -195,7 +195,6 @@
     </mets:mdWrap>
 </mets:digiprovMD>
 </mets:amdSec>
-</#if>
 
 <#list mmList as mm>
 <mets:amdSec ID="fid${mm.fileId}-2-amd">
@@ -205,8 +204,8 @@
             <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
                 <section id="generalFileCharacteristics">
                     <record>
-                        <key id="label">>${mm.label}</key>
-						<key id="fileOriginalName">>${mm.fileOriginalName}</key>
+                        <key id="label">${mm.label}</key>
+						<key id="fileOriginalName">${mm.fileOriginalName}</key>
                       </record>
                 </section>
              </dnx>
@@ -236,6 +235,7 @@
 </mets:digiprovMD>
 </mets:amdSec>
 </#list>
+</#if>
 
 <mets:fileSec>
 	<mets:fileGrp ADMID="rep1-amd" ID="rep1" USE="VIEW">

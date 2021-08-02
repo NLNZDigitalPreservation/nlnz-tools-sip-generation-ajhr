@@ -4,6 +4,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import nz.govt.natlib.ajhr.metadata.MetadataSipItem;
 import nz.govt.natlib.ajhr.metadata.RedepositIeDTO;
+import nz.govt.natlib.ajhr.metadata.RedepositIeFileDTO;
 import nz.govt.natlib.ajhr.proc.AbstractMetsGenerationHandler;
 import nz.govt.natlib.ajhr.util.MetsUtils;
 import nz.govt.natlib.ajhr.util.MultiThreadsPrint;
@@ -12,9 +13,10 @@ import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.ui.ModelMap;
 
 import java.io.*;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHandler {
     private static final int STREAM_BUFFER_LENGTH = 1024 * 16;
@@ -29,17 +31,43 @@ public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHand
     }
 
     @Override
-    protected String createMetsXmlAndCopyStreams() throws IOException, TemplateException, NoSuchAlgorithmException {
+    protected String createMetsXmlAndCopyStreams() throws IOException, TemplateException {
         ModelMap model = new ModelMap();
         model.addAttribute("metProp", redepositIeDTO);
 
         File pmFolder = MetsUtils.combinePath(this.srcFolder, PRESERVATION_MASTER_FOLDER);
         if (pmFolder.exists()) {
-            this.copyDirectory(pmFolder, MetsUtils.combinePath(this.destFolder, PRESERVATION_MASTER_STREAM_FOLDER));
-            List<MetadataSipItem> pmList = handleFiles(MetsUtils.combinePath(this.srcFolder, PRESERVATION_MASTER_FOLDER));
-            if (pmList.size() != redepositIeDTO.getNumFiles()) {
-                throw new IOException("The number of files in the folder does not match the number in the sheet: " + pmFolder.getAbsolutePath());
+            List<RedepositIeFileDTO> pmList;
+
+            if (redepositIeDTO.getNumFiles() == 1) {
+                pmList = handleFiles(MetsUtils.combinePath(this.srcFolder, PRESERVATION_MASTER_FOLDER));
+                if (pmList.size() != 1) {
+                    throw new IOException("The number of files in excel is 1, but found " + pmList.size() + " files in the folder " + pmFolder.getAbsolutePath());
+                }
+                RedepositIeFileDTO pmItem = pmList.get(0);
+                pmItem.setFileCreationDate(redepositIeDTO.getFileCreationDate());
+                pmItem.setFileModificationDate(redepositIeDTO.getFileModificationDate());
+            } else {
+                pmList = redepositIeDTO.getFiles();
+
+                Map<String, RedepositIeFileDTO> mapActual = new HashMap<>();
+                handleFiles(MetsUtils.combinePath(this.srcFolder, PRESERVATION_MASTER_FOLDER)).forEach(item -> {
+                    mapActual.put(item.getFileOriginalName(), item);
+                });
+
+                //Validate that the number of files in excel and the number of actual files are consistent
+                if (pmList.size() != redepositIeDTO.getNumFiles() || pmList.size() != mapActual.size()) {
+                    throw new IOException(String.format("The number of files in excel is %d, the number of files in the folder %s is %d, and the number of files in excel is %d", redepositIeDTO.getNumFiles(), pmFolder.getAbsolutePath(), mapActual.size(), pmList.size()));
+                }
+
+                //Validate that all files exist in the actual folder
+                for (RedepositIeFileDTO item : pmList) {
+                    if (!mapActual.containsKey(item.getFileOriginalName())) {
+                        throw new IOException(String.format("The file %s does not exist", item.getFileOriginalName()));
+                    }
+                }
             }
+
             model.addAttribute("pmList", pmList);
         } else {
             throw new IOException("The preservation master folder does not exist: " + pmFolder.getAbsolutePath());
@@ -47,8 +75,7 @@ public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHand
 
         File mmFolder = MetsUtils.combinePath(this.srcFolder, MODIFIED_MASTER_FOLDER);
         if (mmFolder.exists()) {
-            this.copyDirectory(mmFolder, MetsUtils.combinePath(this.destFolder, MODIFIED_MASTER_FOLDER));
-            List<MetadataSipItem> mmList = handleFiles(MetsUtils.combinePath(this.srcFolder, MODIFIED_MASTER_FOLDER));
+            List<RedepositIeFileDTO> mmList = handleFiles(MetsUtils.combinePath(this.srcFolder, MODIFIED_MASTER_FOLDER));
             model.addAttribute("mmList", mmList);
         } else {
             model.addAttribute("mmList", new ArrayList<MetadataSipItem>());
@@ -56,11 +83,22 @@ public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHand
 
         StringWriter writer = new StringWriter();
         this.metTemplate.process(model, writer);
+
+        //=================================If the mets.xml can be generated, then copy files=================================
+        if (pmFolder.exists()) {
+            this.copyDirectory(pmFolder, MetsUtils.combinePath(this.destFolder, PRESERVATION_MASTER_STREAM_FOLDER));
+        }
+
+        if (mmFolder.exists()) {
+            this.copyDirectory(mmFolder, MetsUtils.combinePath(this.destFolder, MODIFIED_MASTER_FOLDER));
+        }
+        //================================End of copying files===============================================================
+
         return writer.toString();
     }
 
-    public List<MetadataSipItem> handleFiles(File srcDirectory) throws IOException, NoSuchAlgorithmException {
-        List<MetadataSipItem> list = new ArrayList<>();
+    public List<RedepositIeFileDTO> handleFiles(File srcDirectory) throws IOException {
+        List<RedepositIeFileDTO> list = new ArrayList<>();
 
         File[] files = srcDirectory.listFiles();
         if (files == null) {
@@ -72,7 +110,7 @@ public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHand
         for (File f : files) {
             String fileName = f.getName();
 
-            MetadataSipItem item = new MetadataSipItem();
+            RedepositIeFileDTO item = new RedepositIeFileDTO();
             item.setFile(f);
             item.setFileId(fileId++);
             item.setFileOriginalName(fileName);

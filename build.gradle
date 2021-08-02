@@ -10,12 +10,17 @@ sourceCompatibility = '11'
 
 repositories {
 	mavenLocal()
+
 	maven {
-		url = 'https://repo1.maven.org/maven2'
+		url = 'https://repo.huaweicloud.com/repository/maven/'
 	}
 
 	maven {
-		url = 'https://repo.maven.apache.org/maven2'
+		url = 'https://repo1.maven.org/maven2/'
+	}
+
+	maven {
+		url = 'https://repo.maven.apache.org/maven2/'
 	}
 }
 

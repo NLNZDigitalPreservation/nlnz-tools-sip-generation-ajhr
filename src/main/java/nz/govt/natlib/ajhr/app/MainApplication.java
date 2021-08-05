@@ -45,7 +45,7 @@ public class MainApplication implements CommandLineRunner {
     }
 
     private void printUsage() {
-        String msg = "Usage: java -Xms512M -Xmx1024M -jar ajhr.jar [--srcDir=folder] [--destDir=folder] [--forceReplace=true] [--maxThreads=5] [--startYear=0] [--endYear=9999]";
+        String msg = "Usage: java -Xms512M -Xmx1024M -jar ajhr.jar";
         PrettyPrinter.info(msg);
     }
 }

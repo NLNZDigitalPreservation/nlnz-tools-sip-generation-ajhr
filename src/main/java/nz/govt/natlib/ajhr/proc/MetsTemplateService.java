@@ -6,13 +6,9 @@ import freemarker.template.TemplateExceptionHandler;
 import nz.govt.natlib.ajhr.util.PrettyPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 
 @Service
 public class MetsTemplateService {
@@ -58,16 +54,16 @@ public class MetsTemplateService {
         return loadTemplate(NAME_DEFAULT_TEMPLATE);
     }
 
-    public Template loadTemplate(final String templateName) throws IOException {
+    public Template loadTemplate(final String templateFilePath) throws IOException {
         Configuration cfg = initConfiguration();
-        Resource resource = new ClassPathResource(templateName);
-        InputStreamReader reader = new InputStreamReader(resource.getInputStream());
+        //Resource resource = new ClassPathResource(templateFilePath);
+        File fileTemplate = new File(templateFilePath);
+        InputStream inputStream = new FileInputStream(fileTemplate);
+        InputStreamReader reader = new InputStreamReader(inputStream);
 
-        Template template = null;
+        Template template;
         try {
-            template = new Template(templateName, reader, cfg);
-        } catch (IOException e) {
-            throw e;
+            template = new Template(fileTemplate.getName(), reader, cfg);
         } finally {
             try {
                 reader.close();

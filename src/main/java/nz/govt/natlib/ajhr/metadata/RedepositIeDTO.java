@@ -26,7 +26,7 @@ public class RedepositIeDTO {
     private String numFiles;
     private String fileCreationDate;
     private String fileModificationDate;
-    private String modifiedMasterFlag;
+    private boolean modifiedMasterFlag;
     private String ieDmdNo;
     private String ieDmdYear;
     private String ieDmdMonth;
@@ -171,11 +171,11 @@ public class RedepositIeDTO {
         }
     }
 
-    public String getModifiedMasterFlag() {
+    public boolean isModifiedMasterFlag() {
         return modifiedMasterFlag;
     }
 
-    public void setModifiedMasterFlag(String modifiedMasterFlag) {
+    public void setModifiedMasterFlag(boolean modifiedMasterFlag) {
         this.modifiedMasterFlag = modifiedMasterFlag;
     }
 
@@ -237,7 +237,7 @@ public class RedepositIeDTO {
 
     public void setValue(String key, Cell cell) {
         DataFormatter formatter = new DataFormatter();
-        String strValue = formatter.formatCellValue(cell);
+        String strValue = cell == null ? "" : formatter.formatCellValue(cell);
 
         setValue(key, strValue);
     }
@@ -287,8 +287,14 @@ public class RedepositIeDTO {
         if (key.equalsIgnoreCase("No Files")) {
             this.setNumFiles(value);
         }
+        if (key.equalsIgnoreCase("File Creation Date")) {
+            this.setFileCreationDate(value);
+        }
+        if (key.equalsIgnoreCase("File Modification Date")) {
+            this.setFileModificationDate(value);
+        }
         if (key.equalsIgnoreCase("Yes / No")) {
-            this.setModifiedMasterFlag(value);
+            this.setModifiedMasterFlag(value.equalsIgnoreCase("yes") || value.equalsIgnoreCase("true"));
         }
         if (key.equalsIgnoreCase("ALMAMMS")) {
             this.setAlmaMms(value);

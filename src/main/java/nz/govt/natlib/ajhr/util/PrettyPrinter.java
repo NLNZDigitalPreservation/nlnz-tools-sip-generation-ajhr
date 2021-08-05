@@ -2,6 +2,7 @@ package nz.govt.natlib.ajhr.util;
 
 import nz.govt.natlib.ajhr.metadata.MetadataRetVal;
 import org.apache.commons.lang3.SystemUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 
 import java.time.LocalDateTime;
@@ -81,6 +82,27 @@ public class PrettyPrinter {
         String msg = format(args);
         log.info(msg);
         println(ANSI_RESET + msg);
+    }
+
+    public static void debug(Logger log, Exception e, String... args) {
+        String msg = format(args);
+        log.debug(msg, e);
+        println(ANSI_CYAN + msg);
+        println(ANSI_CYAN + ExceptionUtils.getStackTrace(e));
+    }
+
+    public static void error(Logger log, Exception e, String... args) {
+        String msg = format(args);
+        log.error(msg, e);
+        println(ANSI_RED + msg);
+        println(ANSI_RED + ExceptionUtils.getStackTrace(e));
+    }
+
+    public static void info(Logger log, Exception e, String... args) {
+        String msg = format(args);
+        log.info(msg, e);
+        println(ANSI_RESET + msg);
+        println(ANSI_RESET + ExceptionUtils.getStackTrace(e));
     }
 
     public static void println(String msg) {

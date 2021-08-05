@@ -9,6 +9,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.io.IOException;
+
 @Configuration
 public class MainConfig {
     @Value("${AJHR.enable}")
@@ -26,20 +28,8 @@ public class MainConfig {
     @Value("${AJHR.endYear}")
     private int endYearAJHR;
 
-    @Value("${OneoffIE.enable}")
-    private boolean enableOneoffIE;
-    @Value("${OneoffIE.srcDir}")
-    private String srcDirOneoffIE;
-    @Value("${OneoffIE.destDir}")
-    private String destDirOneoffIE;
-    @Value("${OneoffIE.sheetName}")
-    private String sheetNameOneoffIE;
-    @Value("${OneoffIE.metsTemplate}")
-    private String metsTemplateOneoffIE;
-    @Value("${OneoffIE.isForcedReplaced}")
-    private boolean isForcedReplacedOneoffIE;
-    @Value("${OneoffIE.isMultipleRowsExtension}")
-    private boolean isMultipleRowsExtensionOneoffIE;
+    @Value("${Redeposit.Names}")
+    private String[] redepositNames;
 
     @Autowired
     private MetsTemplateService metsTemplateService;
@@ -54,16 +44,15 @@ public class MainConfig {
         RedepositIEFolderScanProcessor bean = new RedepositIEFolderScanProcessor();
         bean.setMetsTemplateService(metsTemplateService);
 
-        RedepositIEEndPoint endPointOneOffIE = new RedepositIEEndPoint();
-        endPointOneOffIE.setEnable(enableOneoffIE);
-        endPointOneOffIE.setSrcDir(srcDirOneoffIE);
-        endPointOneOffIE.setDestDir(destDirOneoffIE);
-        endPointOneOffIE.setSheetName(sheetNameOneoffIE);
-        endPointOneOffIE.setMetsTemplateFileName(metsTemplateOneoffIE);
-        endPointOneOffIE.setForcedReplaced(isForcedReplacedOneoffIE);
-        endPointOneOffIE.setMultipleRowsExtension(isMultipleRowsExtensionOneoffIE);
+        for (String name:redepositNames){
+            try {
+                RedepositIEEndPoint endPointOneOffIE =RedepositIEEndPoint.getInstance(name);
+                bean.addEndPoint(endPointOneOffIE);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
 
-        bean.addEndPoint(endPointOneOffIE);
         return bean;
     }
 }

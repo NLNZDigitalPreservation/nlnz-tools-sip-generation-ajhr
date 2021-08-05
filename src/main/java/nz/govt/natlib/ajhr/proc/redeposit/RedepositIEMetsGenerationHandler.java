@@ -130,31 +130,29 @@ public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHand
     }
 
     public boolean copyDirectory(File srcSubFolder, File destSubFolder) {
-        File[] files = srcSubFolder.listFiles();
-        if (files == null) {
-            return false;
-        }
+        if (srcSubFolder.isDirectory()) {
+            if (!destSubFolder.mkdirs()) {
+                PrettyPrinter.error(log, "Failed to make directory: {}", destSubFolder.getAbsolutePath());
+                return false;
+            }
 
-        if (!destSubFolder.exists() && !destSubFolder.mkdirs()) {
-            return false;
-        }
-
-        for (File f : files) {
-            boolean copyRstVal = false;
+            File[] files = srcSubFolder.listFiles();
+            for (File f : files) {
+                copyDirectory(f, new File(destSubFolder, f.getName()));
+            }
+        } else {
             try {
-                copyRstVal = copyFile(f, new File(destSubFolder, f.getName()));
+                copyFile(srcSubFolder, destSubFolder);
             } catch (IOException e) {
-                PrettyPrinter.error(log, "Failed to copy file: {} -> {} ", ExceptionUtils.getStackTrace(e));
-                return false;
-            }
-            if (!copyRstVal) {
+                PrettyPrinter.error(log, e, "Failed to copy file: {} -> {} ", srcSubFolder.getAbsolutePath(), destSubFolder.getAbsolutePath());
                 return false;
             }
         }
+
         return true;
     }
 
-    private boolean copyFile(File srcFile, File destFile) throws IOException {
+    private void copyFile(File srcFile, File destFile) throws IOException {
         InputStream inputStream = new BufferedInputStream(new FileInputStream(srcFile));
         OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(destFile));
 
@@ -180,7 +178,5 @@ public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHand
 
         msg = String.format("%s 100%s size=%d", srcFile.getAbsolutePath(), "%", (long) lenTotal);
         MultiThreadsPrint.putFinished(key, msg);
-
-        return true;
     }
 }

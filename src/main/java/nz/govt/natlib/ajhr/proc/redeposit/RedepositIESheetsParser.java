@@ -2,16 +2,18 @@ package nz.govt.natlib.ajhr.proc.redeposit;
 
 import nz.govt.natlib.ajhr.metadata.RedepositIeDTO;
 import nz.govt.natlib.ajhr.metadata.RedepositIeFileDTO;
+import nz.govt.natlib.ajhr.util.MetsUtils;
 import nz.govt.natlib.ajhr.util.PrettyPrinter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -19,16 +21,16 @@ import java.util.Map;
 
 public class RedepositIESheetsParser {
     public static final Logger log = LoggerFactory.getLogger(RedepositIESheetsParser.class);
-    private final static String SHEET_FILE = "Input spreadsheet for redeposit of IE with bad SM Mids.xlsx";
+    private static final String userDirectory = System.getProperty("user.dir");
+    private final static File SHEET_FILE = MetsUtils.combinePath(userDirectory, "conf", "resubmission", "Input spreadsheet for redeposit of IE with bad SM Mids.xlsx");
 
     public static List<RedepositIeDTO> parse(String sheetName, boolean isMultipleRowsExtension) throws IOException {
         List<RedepositIeDTO> retVal = new ArrayList<>();
 
-        Resource resource = new ClassPathResource(SHEET_FILE);
-        Workbook workbook = new XSSFWorkbook(resource.getInputStream());
+        InputStream inputStream = new FileInputStream(SHEET_FILE);
+        Workbook workbook = new XSSFWorkbook(inputStream);
 //        Sheet sheet = workbook.getSheetAt(0);
         Sheet sheet = workbook.getSheet(sheetName);
-
 
         Map<Integer, String> headerIndex = new HashMap<>();
         Row fieldNameRow = sheet.getRow(1);
@@ -50,10 +52,6 @@ public class RedepositIESheetsParser {
             retVal.add(dto);
             for (int col = 0; col < headerIndex.size(); col++) {
                 Cell cell = row.getCell(col);
-                if (cell == null) {
-                    continue;
-                }
-
                 String colKey = headerIndex.get(col);
                 dto.setValue(colKey, cell);
             }
@@ -120,6 +118,7 @@ public class RedepositIESheetsParser {
             default:
                 value = "";
         }
+        value = value == null ? "" : value;
         return value;
     }
 }

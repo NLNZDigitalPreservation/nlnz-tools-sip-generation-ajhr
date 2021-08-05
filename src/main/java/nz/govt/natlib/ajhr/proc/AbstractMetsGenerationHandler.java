@@ -61,7 +61,8 @@ public abstract class AbstractMetsGenerationHandler {
         try {
             metsXml = createMetsXmlAndCopyStreams();
         } catch (IOException | TemplateException | NoSuchAlgorithmException e) {
-            log.error("Failed to generate metsXml and copy files.", e);
+//            log.error("Failed to generate metsXml and copy files.", e);
+            PrettyPrinter.error(log, e, "Failed to generate metsXml and copy files.");
             return MetadataRetVal.FAIL;
         }
 

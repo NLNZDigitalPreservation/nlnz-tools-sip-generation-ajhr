@@ -14,9 +14,7 @@ import org.slf4j.LoggerFactory;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class RedepositIEFolderScanProcessor {
     private static final Logger log = LoggerFactory.getLogger(RedepositIEFolderScanProcessor.class);
@@ -39,15 +37,14 @@ public class RedepositIEFolderScanProcessor {
 
         //Initial sheet values
         final List<RedepositIeDTO> metaDataList;
-        final Map<String, RedepositIeDTO> metaDataMap = new HashMap<>();
+        //final Map<String, RedepositIeDTO> metaDataMap = new HashMap<>();
         try {
             metaDataList = RedepositIESheetsParser.parse(endPoint.getSheetName(), endPoint.isMultipleRowsExtension());
-
-            metaDataList.forEach(dto -> {
-                metaDataMap.put(dto.getOriginalPID().trim(), dto);
-            });
-
-            metaDataList.clear();
+//            metaDataList.forEach(dto -> {
+//                metaDataMap.put(dto.getOriginalPID().trim(), dto);
+//            });
+//
+//            metaDataList.clear();
         } catch (IOException e) {
             PrettyPrinter.error(log, "Failed to parse values in the excel file, [{}]", endPoint.getSheetName());
             return;
@@ -56,16 +53,17 @@ public class RedepositIEFolderScanProcessor {
         //Initial Template
         final Template metsTemplate;
         try {
-            metsTemplate = MetsTemplateService.loadTemplate(endPoint.getMetsTemplateFileName());
+            metsTemplate = MetsTemplateService.loadTemplate(endPoint.getMetsTemplateFilePath());
         } catch (IOException e) {
-            PrettyPrinter.error(log, "Failed to initial template [{}]", endPoint.getMetsTemplateFileName());
+            PrettyPrinter.error(log, e, "Failed to initial template [{}]", endPoint.getMetsTemplateFilePath());
             return;
         }
 
         //Scan the IEs to be redeposited to Rosetta
-        File srcDirPath = new File(endPoint.getSrcDir());
-        if (!srcDirPath.exists()) {
+        File rootSrcDirPath = new File(endPoint.getSrcDir());
+        if (!rootSrcDirPath.exists()) {
             PrettyPrinter.error(log, "The src directory does not exist: {}", endPoint.getSrcDir());
+            return;
         }
 
         File destDirPath = new File(endPoint.getDestDir());
@@ -74,18 +72,37 @@ public class RedepositIEFolderScanProcessor {
             PrettyPrinter.info(log, "The dest directory is made: {}", endPoint.getDestDir());
         }
 
-        File[] ieFolders = srcDirPath.listFiles();
+        File[] ieFolders = rootSrcDirPath.listFiles();
         assert ieFolders != null;
 
         ResultOverview overview = new ResultOverview();
-        for (File srcDir : ieFolders) {
-            RedepositIeDTO ieProp = metaDataMap.get(srcDir.getName().trim());
-            if (ieProp == null) {
-                PrettyPrinter.error(log, "Failed to get the related value from Excel file: {}", srcDir.getAbsolutePath());
-                overview.addResultItem(MetadataRetVal.FAIL, srcDir);
+//        for (File srcDir : ieFolders) {
+//            RedepositIeDTO ieProp = metaDataMap.get(srcDir.getName().trim());
+//            if (ieProp == null) {
+//                PrettyPrinter.error(log, "Failed to get the related value from Excel file: {}", srcDir.getAbsolutePath());
+//                overview.addResultItem(MetadataRetVal.FAIL, srcDir);
+//                continue;
+//            }
+//            File destDir = MetsUtils.combinePath(endPoint.getDestDir(), srcDir.getName());
+//            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(metsTemplate, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), ieProp, endPoint.isForcedReplaced());
+//            MetadataRetVal retVal = MetadataRetVal.FAIL;
+//            try {
+//                retVal = handler.process();
+//            } catch (IOException e) {
+//                PrettyPrinter.error(log, "Failed to process: {}, error is: {}", srcDir.getAbsolutePath(), ExceptionUtils.getStackTrace(e));
+//            }
+//            overview.addResultItem(retVal, srcDir);
+//            PrettyPrinter.printResult(retVal, srcDir.getAbsolutePath());
+//        }
+        for (RedepositIeDTO ieProp : metaDataList) {
+            File srcDir = MetsUtils.combinePath(rootSrcDirPath, ieProp.getOriginalPID());
+            if (!srcDir.exists() || !srcDir.isDirectory()) {
+                PrettyPrinter.info("There is no related folder for [Original PID = {}] in the directory: [{}]", ieProp.getOriginalPID(), rootSrcDirPath.getAbsolutePath());
+                overview.addResultItem(MetadataRetVal.SKIP, srcDir);
                 continue;
             }
-            File destDir = MetsUtils.combinePath(endPoint.getDestDir(), srcDir.getName());
+
+            File destDir = MetsUtils.combinePath(endPoint.getDestDir(), ieProp.getOriginalPID());
             RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(metsTemplate, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), ieProp, endPoint.isForcedReplaced());
             MetadataRetVal retVal = MetadataRetVal.FAIL;
             try {
@@ -97,7 +114,9 @@ public class RedepositIEFolderScanProcessor {
             PrettyPrinter.printResult(retVal, srcDir.getAbsolutePath());
         }
 
-        metaDataMap.clear();
+
+//        metaDataMap.clear();
+        metaDataList.clear();
 
         PrettyPrinter.println(overview.getSummaryInfo());
     }

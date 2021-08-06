@@ -112,8 +112,8 @@
                         <section id="generalFileCharacteristics">
                             <record>
                                 <key id="label">${pm.label}</key>
-                                <key id="fileCreationDate">-</key>
-                                <key id="fileModificationDate">-</key>
+                                <key id="fileCreationDate">${pm.fileCreationDate}</key>
+                                <key id="fileModificationDate">${pm.fileModificationDate}</key>
                                 <key id="fileOriginalName">${pm.fileOriginalName}</key>
                             </record>
                         </section>

@@ -14,7 +14,7 @@ public class RedepositIEEndPoint {
     private String srcDir;
     private String destDir;
     private String sheetName;
-    private String metsTemplateFilePath;
+    private File metsTemplateFilePath;
     private boolean isForcedReplaced;
     private boolean isMultipleRowsExtension;
 
@@ -35,7 +35,7 @@ public class RedepositIEEndPoint {
         instance.setSheetName(properties.getProperty("sheetName"));
 
         File fileTemplatePath = MetsUtils.combinePath(userDirectory, "conf", "resubmission", String.format("mets-template-redeposit-%s.xml", propFileName.trim()));
-        instance.setMetsTemplateFilePath(fileTemplatePath.getAbsolutePath());
+        instance.setMetsTemplateFilePath(fileTemplatePath);
 
         return instance;
     }
@@ -72,11 +72,11 @@ public class RedepositIEEndPoint {
         this.sheetName = sheetName;
     }
 
-    public String getMetsTemplateFilePath() {
+    public File getMetsTemplateFilePath() {
         return metsTemplateFilePath;
     }
 
-    public void setMetsTemplateFilePath(String metsTemplateFilePath) {
+    public void setMetsTemplateFilePath(File metsTemplateFilePath) {
         this.metsTemplateFilePath = metsTemplateFilePath;
     }
 

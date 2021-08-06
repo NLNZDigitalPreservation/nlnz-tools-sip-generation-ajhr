@@ -1,5 +1,7 @@
 package nz.govt.natlib.ajhr.metadata;
 
+import nz.govt.natlib.ajhr.util.PrettyPrinter;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,7 +28,18 @@ public class ResultOverview {
         groupedByParentFolder.forEach((k, v) -> {
             bufInto.append(k).append(System.lineSeparator());
             v.forEach(item -> {
-                bufInto.append(String.format("\t\t----[%s] %s", item.getResult().name(), item.getSubFolder().getName())).append(System.lineSeparator());
+                String msg = String.format("\t\t----[%s] %s", item.getResult().name(), item.getSubFolder().getName());
+                String color;
+
+                if (item.getResult() == MetadataRetVal.SUCC) {
+                    color = PrettyPrinter.ANSI_GREEN;
+                } else if (item.getResult() == MetadataRetVal.SKIP) {
+                    color = PrettyPrinter.ANSI_CYAN;
+                } else {
+                    color = PrettyPrinter.ANSI_RED;
+                }
+
+                bufInto.append(color).append(msg).append(System.lineSeparator());
             });
         });
         groupedByParentFolder.forEach((k, v) -> {
@@ -40,6 +53,7 @@ public class ResultOverview {
                 groupedByResult.put(val, new ArrayList<>());
             }
         }
+        bufInto.append(PrettyPrinter.ANSI_RESET);
         bufInto.append(String.format("There are [%d] SIPs processed", allFinished.size()));
         groupedByResult.forEach((k, v) -> {
             bufInto.append(String.format(", [%s: %d]", k.name(), v.size()));

@@ -17,12 +17,16 @@ import java.util.List;
 
 public class AJHRMetsGenerationHandlerTests {
     private static final String ROOT_FOLDER = "C:\\Users\\leefr\\workspace\\tmp";
+    private static final String userDirectory = System.getProperty("user.dir");
+    private static final String NAME_DEFAULT_TEMPLATE = "mets-template-ajhr.xml";
     private static AJHRMetsGenerationHandler testInstance;
 
     @BeforeAll
     public static void init() throws IOException {
+        File fileTemplate = MetsUtils.combinePath(userDirectory, "conf", "ajhr", NAME_DEFAULT_TEMPLATE);
+
         MetsTemplateService MetsTemplateService = new MetsTemplateService();
-        Template template = MetsTemplateService.loadTemplate();
+        Template template = MetsTemplateService.loadTemplate(fileTemplate);
 
         File rootFolder = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G");
         File subFolder = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01");

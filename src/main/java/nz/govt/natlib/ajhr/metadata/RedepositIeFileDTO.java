@@ -3,7 +3,7 @@ package nz.govt.natlib.ajhr.metadata;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 
-public class RedepositIeFileDTO extends MetadataSipItem{
+public class RedepositIeFileDTO extends MetadataSipItem {
     private String originalPID;
     private String fileCreationDate;
     private String fileModificationDate;
@@ -21,7 +21,11 @@ public class RedepositIeFileDTO extends MetadataSipItem{
     }
 
     public void setFileCreationDate(String fileCreationDate) {
-        this.fileCreationDate = fileCreationDate;
+        if (StringUtils.isEmpty(fileCreationDate)) {
+            this.fileCreationDate = "-";
+        } else {
+            this.fileCreationDate = fileCreationDate;
+        }
     }
 
     public String getFileModificationDate() {
@@ -29,7 +33,11 @@ public class RedepositIeFileDTO extends MetadataSipItem{
     }
 
     public void setFileModificationDate(String fileModificationDate) {
-        this.fileModificationDate = fileModificationDate;
+        if (StringUtils.isEmpty(fileModificationDate)) {
+            this.fileModificationDate = "-";
+        } else {
+            this.fileModificationDate = fileModificationDate;
+        }
     }
 
     public void setValue(String key, String value) {

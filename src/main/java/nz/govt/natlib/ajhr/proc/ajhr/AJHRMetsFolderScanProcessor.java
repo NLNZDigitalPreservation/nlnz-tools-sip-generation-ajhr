@@ -5,6 +5,7 @@ import nz.govt.natlib.ajhr.metadata.MetadataMetProp;
 import nz.govt.natlib.ajhr.metadata.MetadataRetVal;
 import nz.govt.natlib.ajhr.metadata.ResultOverview;
 import nz.govt.natlib.ajhr.proc.MetsTemplateService;
+import nz.govt.natlib.ajhr.util.MetsUtils;
 import nz.govt.natlib.ajhr.util.PrettyPrinter;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
@@ -17,31 +18,22 @@ import java.util.concurrent.Semaphore;
 
 public class AJHRMetsFolderScanProcessor {
     private static final Logger log = LoggerFactory.getLogger(AJHRMetsFolderScanProcessor.class);
-
-    private final boolean isEnable;
-    private int maxThreads = 1;
-    private final String srcDir;
-    private final String destDir;
-    private final boolean isForcedReplaced;
-    private int startYear = 0, endYear = 9999;
+    private static final String userDirectory = System.getProperty("user.dir");
+    private static final String NAME_DEFAULT_TEMPLATE = "mets-template-ajhr.xml";
+    private final AJHTConfProperties ajhrConfProp;
 
     private final Semaphore semaphore;
     private final ResultOverview overview = new ResultOverview();
 
     private Template metsTemplate;
 
-    public AJHRMetsFolderScanProcessor(boolean isEnable, String srcDir, String destDir, int maxThreads, boolean isForcedReplaced, int startYear, int endYear, MetsTemplateService metsTemplateService) {
-        this.isEnable = isEnable;
-        this.srcDir = srcDir;
-        this.destDir = destDir;
-        this.maxThreads = maxThreads;
-        this.isForcedReplaced = isForcedReplaced;
-        this.startYear = startYear;
-        this.endYear = endYear;
+    public AJHRMetsFolderScanProcessor(AJHTConfProperties ajhrConfProp, MetsTemplateService metsTemplateService) {
+        this.ajhrConfProp = ajhrConfProp;
 
-        semaphore = new Semaphore(maxThreads);
+        semaphore = new Semaphore(ajhrConfProp.getMaxThreads());
         try {
-            metsTemplate = metsTemplateService.loadTemplate();
+            File fileTemplate = MetsUtils.combinePath(userDirectory, "conf", "ajhr", NAME_DEFAULT_TEMPLATE);
+            metsTemplate = metsTemplateService.loadTemplate(fileTemplate);
         } catch (IOException e) {
             log.error("Failed to generate SIP:", e);
         }
@@ -50,17 +42,17 @@ public class AJHRMetsFolderScanProcessor {
     }
 
     public void walkSourceFolder() throws InterruptedException, IOException {
-        if (!isEnable) {
+        if (!ajhrConfProp.isEnable()) {
             PrettyPrinter.info(log, "AJHR processing is disabled.");
             return;
         }
 
-        if (this.isForcedReplaced) {
-            File fDestDir = new File(this.destDir);
+        if (ajhrConfProp.isForcedReplaced()) {
+            File fDestDir = new File(ajhrConfProp.getDestDir());
             if (fDestDir.exists()) {
                 File[] files = fDestDir.listFiles();
                 if (files != null) {
-                    PrettyPrinter.debug(log, "Will remove all existing contents from: " + this.destDir);
+                    PrettyPrinter.debug(log, "Will remove all existing contents from: " + ajhrConfProp.getDestDir());
                     for (File f : files) {
                         if (f.isDirectory()) {
                             FileUtils.deleteDirectory(f);
@@ -70,16 +62,16 @@ public class AJHRMetsFolderScanProcessor {
                             PrettyPrinter.debug(log, "Deleted file: " + f.getAbsolutePath());
                         }
                     }
-                    PrettyPrinter.debug(log, "Removed all existing contents from: " + this.destDir);
+                    PrettyPrinter.debug(log, "Removed all existing contents from: " + ajhrConfProp.getDestDir());
                 }
             } else if (!fDestDir.mkdirs()) {
                 PrettyPrinter.error(log, "Failed to create dest directory: " + fDestDir.getAbsolutePath());
                 return;
             }
         }
-        _walkSourceFolder(new File(srcDir));
+        _walkSourceFolder(new File(ajhrConfProp.getSrcDir()));
 
-        semaphore.acquire(maxThreads);
+        semaphore.acquire(ajhrConfProp.getMaxThreads());
 
         String resultInfo = overview.getSummaryInfo();
         PrettyPrinter.println(resultInfo);
@@ -131,7 +123,7 @@ public class AJHRMetsFolderScanProcessor {
                             try {
                                 tryTimes--;
                                 log.debug("Found valid subfolder: {}", subFolder.getAbsolutePath());
-                                AJHRMetsGenerationHandler generationProcessor = new AJHRMetsGenerationHandler(metsTemplate, directory, subFolder, destDir, isForcedReplaced);
+                                AJHRMetsGenerationHandler generationProcessor = new AJHRMetsGenerationHandler(metsTemplate, directory, subFolder, ajhrConfProp.getDestDir(), ajhrConfProp.isForcedReplaced());
                                 retVal = generationProcessor.process();
                             } catch (IOException e) {
                                 log.error("Failed to generate SIP for: {}", subFolder.getAbsolutePath(), e);
@@ -165,6 +157,6 @@ public class AJHRMetsFolderScanProcessor {
 
         int year = Integer.parseInt(metProp.getYear());
 
-        return year >= this.startYear && year <= this.endYear;
+        return year >= ajhrConfProp.getStartYear() && year <= ajhrConfProp.getEndYear();
     }
 }

@@ -40,11 +40,6 @@ public class RedepositIEFolderScanProcessor {
         //final Map<String, RedepositIeDTO> metaDataMap = new HashMap<>();
         try {
             metaDataList = RedepositIESheetsParser.parse(endPoint.getSheetName(), endPoint.isMultipleRowsExtension());
-//            metaDataList.forEach(dto -> {
-//                metaDataMap.put(dto.getOriginalPID().trim(), dto);
-//            });
-//
-//            metaDataList.clear();
         } catch (IOException e) {
             PrettyPrinter.error(log, "Failed to parse values in the excel file, [{}]", endPoint.getSheetName());
             return;
@@ -55,7 +50,7 @@ public class RedepositIEFolderScanProcessor {
         try {
             metsTemplate = MetsTemplateService.loadTemplate(endPoint.getMetsTemplateFilePath());
         } catch (IOException e) {
-            PrettyPrinter.error(log, e, "Failed to initial template [{}]", endPoint.getMetsTemplateFilePath());
+            PrettyPrinter.error(log, e, "Failed to initial template [{}]", endPoint.getMetsTemplateFilePath().getAbsolutePath());
             return;
         }
 
@@ -66,9 +61,9 @@ public class RedepositIEFolderScanProcessor {
             return;
         }
 
-        File destDirPath = new File(endPoint.getDestDir());
-        if (!destDirPath.exists()) {
-            destDirPath.mkdirs();
+        File rootDestDirPath = new File(endPoint.getDestDir());
+        if (!rootDestDirPath.exists()) {
+            rootDestDirPath.mkdirs();
             PrettyPrinter.info(log, "The dest directory is made: {}", endPoint.getDestDir());
         }
 
@@ -76,24 +71,7 @@ public class RedepositIEFolderScanProcessor {
         assert ieFolders != null;
 
         ResultOverview overview = new ResultOverview();
-//        for (File srcDir : ieFolders) {
-//            RedepositIeDTO ieProp = metaDataMap.get(srcDir.getName().trim());
-//            if (ieProp == null) {
-//                PrettyPrinter.error(log, "Failed to get the related value from Excel file: {}", srcDir.getAbsolutePath());
-//                overview.addResultItem(MetadataRetVal.FAIL, srcDir);
-//                continue;
-//            }
-//            File destDir = MetsUtils.combinePath(endPoint.getDestDir(), srcDir.getName());
-//            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(metsTemplate, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), ieProp, endPoint.isForcedReplaced());
-//            MetadataRetVal retVal = MetadataRetVal.FAIL;
-//            try {
-//                retVal = handler.process();
-//            } catch (IOException e) {
-//                PrettyPrinter.error(log, "Failed to process: {}, error is: {}", srcDir.getAbsolutePath(), ExceptionUtils.getStackTrace(e));
-//            }
-//            overview.addResultItem(retVal, srcDir);
-//            PrettyPrinter.printResult(retVal, srcDir.getAbsolutePath());
-//        }
+
         for (RedepositIeDTO ieProp : metaDataList) {
             File srcDir = MetsUtils.combinePath(rootSrcDirPath, ieProp.getOriginalPID());
             if (!srcDir.exists() || !srcDir.isDirectory()) {
@@ -103,7 +81,7 @@ public class RedepositIEFolderScanProcessor {
             }
 
             File destDir = MetsUtils.combinePath(endPoint.getDestDir(), ieProp.getOriginalPID());
-            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(metsTemplate, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), ieProp, endPoint.isForcedReplaced());
+            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(metsTemplate, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), ieProp, endPoint.isForcedReplaced(), endPoint.isMultipleRowsExtension());
             MetadataRetVal retVal = MetadataRetVal.FAIL;
             try {
                 retVal = handler.process();
@@ -114,8 +92,6 @@ public class RedepositIEFolderScanProcessor {
             PrettyPrinter.printResult(retVal, srcDir.getAbsolutePath());
         }
 
-
-//        metaDataMap.clear();
         metaDataList.clear();
 
         PrettyPrinter.println(overview.getSummaryInfo());

@@ -121,10 +121,10 @@
                     <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
                         <section id="generalFileCharacteristics">
                             <record>
-                                <key id="label">>${pm.label}</key>
-                                <key id="fileCreationDate">${metProp.fileCreationDate}</key>
-                                <key id="fileModificationDate">${metProp.fileModificationDate}</key>
-                                <key id="fileOriginalName">>${pm.fileOriginalName}</key>
+                                <key id="label">${pm.label}</key>
+                                <key id="fileCreationDate">${pm.fileCreationDate}</key>
+                                <key id="fileModificationDate">${pm.fileModificationDate}</key>
+                                <key id="fileOriginalName">${pm.fileOriginalName}</key>
                             </record>
                         </section>
                     </dnx>

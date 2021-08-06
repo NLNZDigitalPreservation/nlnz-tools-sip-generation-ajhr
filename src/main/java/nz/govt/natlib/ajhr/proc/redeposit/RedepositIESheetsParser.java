@@ -49,7 +49,7 @@ public class RedepositIESheetsParser {
                 continue;
             }
             RedepositIeDTO dto = new RedepositIeDTO();
-            retVal.add(dto);
+
             for (int col = 0; col < headerIndex.size(); col++) {
                 Cell cell = row.getCell(col);
                 String colKey = headerIndex.get(col);
@@ -61,6 +61,8 @@ public class RedepositIESheetsParser {
                 PrettyPrinter.error(log, "The row is empty, rowNumber: " + rowNum);
                 continue;
             }
+
+            retVal.add(dto);
 
             int numOfFiles = dto.getNumFiles();
             if (!isMultipleRowsExtension || numOfFiles <= 1) {
@@ -82,6 +84,12 @@ public class RedepositIESheetsParser {
                     String colValue = cell.toString();
                     fileDTO.setValue(colKey, colValue);
                 }
+
+                if (!fileDTO.getOriginalPID().contains("-")) {
+                    throw new IOException(String.format("[%s]: Invalid sub-item: %s, in line: %d", dto.getOriginalPID(), fileDTO.getOriginalPID(), (rowNum + fNum + 1)));
+                }
+
+                fileDTO.setFileId(fNum);
                 dto.getFiles().add(fileDTO);
             }
 

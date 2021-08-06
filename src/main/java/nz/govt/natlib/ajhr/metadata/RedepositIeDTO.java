@@ -144,7 +144,11 @@ public class RedepositIeDTO {
     }
 
     public int getNumFiles() {
-        return Integer.parseInt(numFiles);
+        if (StringUtils.isEmpty(numFiles)) {
+            return 0;
+        } else {
+            return Integer.parseInt(numFiles);
+        }
     }
 
     public void setNumFiles(String numFiles) {
@@ -156,7 +160,11 @@ public class RedepositIeDTO {
     }
 
     public void setFileCreationDate(String fileCreationDate) {
-        this.fileCreationDate = fileCreationDate;
+        if (StringUtils.isEmpty(fileCreationDate)) {
+            this.fileCreationDate = "-";
+        } else {
+            this.fileCreationDate = fileCreationDate;
+        }
     }
 
     public String getFileModificationDate() {
@@ -184,10 +192,17 @@ public class RedepositIeDTO {
     }
 
     public void setIeDmdNo(String ieDmdNo) {
-        this.ieDmdNo = ieDmdNo;
+        if (StringUtils.isEmpty(ieDmdNo)) {
+            this.ieDmdNo = "-";
+        } else {
+            this.ieDmdNo = ieDmdNo;
+        }
     }
 
     public String getIeDmdYear() {
+        if (StringUtils.isEmpty(ieDmdYear)) {
+            return "-";
+        }
         return ieDmdYear;
     }
 
@@ -196,6 +211,9 @@ public class RedepositIeDTO {
     }
 
     public String getIeDmdMonth() {
+        if (StringUtils.isEmpty(ieDmdMonth)) {
+            return "-";
+        }
         return ieDmdMonth;
     }
 
@@ -204,6 +222,9 @@ public class RedepositIeDTO {
     }
 
     public String getIeDmdDay() {
+        if (StringUtils.isEmpty(ieDmdDay)) {
+            return "-";
+        }
         return ieDmdDay;
     }
 
@@ -298,6 +319,19 @@ public class RedepositIeDTO {
         }
         if (key.equalsIgnoreCase("ALMAMMS")) {
             this.setAlmaMms(value);
+        }
+        if (key.equalsIgnoreCase("no")) {
+            this.setIeDmdNo(value);
+        }
+
+        if (key.equalsIgnoreCase("year")) {
+            this.setIeDmdYear(value);
+        }
+        if (key.equalsIgnoreCase("month")) {
+            this.setIeDmdMonth(value);
+        }
+        if (key.equalsIgnoreCase("day")) {
+            this.setIeDmdDay(value);
         }
     }
 }

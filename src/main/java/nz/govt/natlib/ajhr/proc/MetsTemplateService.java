@@ -15,7 +15,7 @@ public class MetsTemplateService {
     private static final Logger log = LoggerFactory.getLogger(MetsTemplateService.class);
 
     private static final String ROOT_DIR_TEMPLATE = ".";
-    private static final String NAME_DEFAULT_TEMPLATE = "mets-template-ajhr.xml";
+
 
     public Configuration initConfiguration() throws IOException {
         // Create your Configuration instance, and specify if up to what FreeMarker
@@ -50,14 +50,8 @@ public class MetsTemplateService {
         return cfg;
     }
 
-    public Template loadTemplate() throws IOException {
-        return loadTemplate(NAME_DEFAULT_TEMPLATE);
-    }
-
-    public Template loadTemplate(final String templateFilePath) throws IOException {
+    public Template loadTemplate(final File fileTemplate) throws IOException {
         Configuration cfg = initConfiguration();
-        //Resource resource = new ClassPathResource(templateFilePath);
-        File fileTemplate = new File(templateFilePath);
         InputStream inputStream = new FileInputStream(fileTemplate);
         InputStreamReader reader = new InputStreamReader(inputStream);
 

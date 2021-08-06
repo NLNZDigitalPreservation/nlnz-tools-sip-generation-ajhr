@@ -116,10 +116,12 @@ public class PrettyPrinter {
         }
 
         String base = args[0];
+        String[] dividedItems = base.split("\\{}");
+        StringBuilder retVal = new StringBuilder(dividedItems[0]);
         for (int i = 1; i < args.length; i++) {
-            base = base.replaceFirst("\\{\\}", args[i]);
+            retVal.append(args[i]).append(dividedItems[i]);
         }
-        return base;
+        return retVal.toString();
     }
 
     private static String getTimestamp(LocalDateTime ldtNow) {

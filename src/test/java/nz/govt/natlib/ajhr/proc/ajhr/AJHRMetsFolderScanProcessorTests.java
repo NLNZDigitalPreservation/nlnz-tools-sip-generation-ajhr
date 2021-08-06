@@ -17,7 +17,16 @@ public class AJHRMetsFolderScanProcessorTests {
     public static void init() {
         String srcDir = new File(ROOT_FOLDER, "AJHR_ORIGINAL").getAbsolutePath();
         String destDir = new File(ROOT_FOLDER, "AJHR_TEST").getAbsolutePath();
-        processor = new AJHRMetsFolderScanProcessor(true, srcDir, destDir, 5, true, 0, 9999, new MetsTemplateService());
+
+        AJHTConfProperties prop = new AJHTConfProperties();
+        prop.setEnable(true);
+        prop.setSrcDir(srcDir);
+        prop.setDestDir(destDir);
+        prop.setMaxThreads(5);
+        prop.setForcedReplaced(true);
+        prop.setStartYear(0);
+        prop.setEndYear(9999);
+        processor = new AJHRMetsFolderScanProcessor(prop, new MetsTemplateService());
     }
 
     @Test

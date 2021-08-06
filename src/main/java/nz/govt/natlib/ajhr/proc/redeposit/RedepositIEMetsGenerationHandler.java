@@ -9,7 +9,6 @@ import nz.govt.natlib.ajhr.proc.AbstractMetsGenerationHandler;
 import nz.govt.natlib.ajhr.util.MetsUtils;
 import nz.govt.natlib.ajhr.util.MultiThreadsPrint;
 import nz.govt.natlib.ajhr.util.PrettyPrinter;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.ui.ModelMap;
 
 import java.io.*;
@@ -21,13 +20,15 @@ import java.util.Map;
 public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHandler {
     private static final int STREAM_BUFFER_LENGTH = 1024 * 16;
     private final RedepositIeDTO redepositIeDTO;
+    private final boolean isMultiple;
 
-    public RedepositIEMetsGenerationHandler(Template metTemplate, String srcFolder, String destFolder, RedepositIeDTO redepositIeDTO, boolean replaceFlag) {
+    public RedepositIEMetsGenerationHandler(Template metTemplate, String srcFolder, String destFolder, RedepositIeDTO redepositIeDTO, boolean replaceFlag, boolean isMultiple) {
         this.metTemplate = metTemplate;
         this.srcFolder = new File(srcFolder);
         this.destFolder = new File(destFolder);
         this.redepositIeDTO = redepositIeDTO;
         this.isForcedReplaced = replaceFlag;
+        this.isMultiple = isMultiple;
     }
 
     @Override
@@ -37,23 +38,20 @@ public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHand
 
         File pmFolder = MetsUtils.combinePath(this.srcFolder, PRESERVATION_MASTER_FOLDER);
         if (pmFolder.exists()) {
-            List<RedepositIeFileDTO> pmList;
+            List<RedepositIeFileDTO> pmList = new ArrayList<>();
+            this.walkFiles(pmList, MetsUtils.combinePath(this.srcFolder, PRESERVATION_MASTER_FOLDER));
 
-            if (redepositIeDTO.getNumFiles() == 1) {
-                pmList = handleFiles(MetsUtils.combinePath(this.srcFolder, PRESERVATION_MASTER_FOLDER));
-                if (pmList.size() != 1) {
-                    throw new IOException("The number of files in excel is 1, but found " + pmList.size() + " files in the folder " + pmFolder.getAbsolutePath());
-                }
-                RedepositIeFileDTO pmItem = pmList.get(0);
-                pmItem.setFileCreationDate(redepositIeDTO.getFileCreationDate());
-                pmItem.setFileModificationDate(redepositIeDTO.getFileModificationDate());
-            } else {
-                pmList = redepositIeDTO.getFiles();
-
-                Map<String, RedepositIeFileDTO> mapActual = new HashMap<>();
-                handleFiles(MetsUtils.combinePath(this.srcFolder, PRESERVATION_MASTER_FOLDER)).forEach(item -> {
-                    mapActual.put(item.getFileOriginalName(), item);
+            if (!isMultiple) {
+                pmList.forEach(e -> {
+                    e.setFileCreationDate(redepositIeDTO.getFileCreationDate());
+                    e.setFileModificationDate(redepositIeDTO.getFileModificationDate());
                 });
+            } else {
+                Map<String, RedepositIeFileDTO> mapActual = new HashMap<>();
+                pmList.forEach(item -> mapActual.put(item.getFileOriginalName(), item));
+                pmList.clear();
+
+                pmList = redepositIeDTO.getFiles();
 
                 //Validate that the number of files in excel and the number of actual files are consistent
                 if (pmList.size() != redepositIeDTO.getNumFiles() || pmList.size() != mapActual.size()) {
@@ -75,7 +73,8 @@ public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHand
 
         File mmFolder = MetsUtils.combinePath(this.srcFolder, MODIFIED_MASTER_FOLDER);
         if (mmFolder.exists()) {
-            List<RedepositIeFileDTO> mmList = handleFiles(MetsUtils.combinePath(this.srcFolder, MODIFIED_MASTER_FOLDER));
+            List<RedepositIeFileDTO> mmList = new ArrayList<>();
+            this.walkFiles(mmList, MetsUtils.combinePath(this.srcFolder, MODIFIED_MASTER_FOLDER));
             model.addAttribute("mmList", mmList);
         } else {
             model.addAttribute("mmList", new ArrayList<MetadataSipItem>());
@@ -90,43 +89,47 @@ public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHand
         }
 
         if (mmFolder.exists()) {
-            this.copyDirectory(mmFolder, MetsUtils.combinePath(this.destFolder, MODIFIED_MASTER_FOLDER));
+            this.copyDirectory(mmFolder, MetsUtils.combinePath(this.destFolder, MODIFIED_MASTER_STREAM_FOLDER));
         }
         //================================End of copying files===============================================================
 
         return writer.toString();
     }
 
-    public List<RedepositIeFileDTO> handleFiles(File srcDirectory) throws IOException {
-        List<RedepositIeFileDTO> list = new ArrayList<>();
+    public void walkFiles(List<RedepositIeFileDTO> retVal, File srcPath) throws IOException {
+        if (srcPath.isFile()) {
+            RedepositIeFileDTO dto = getFileProperties(srcPath, retVal.size() + 1);
+            retVal.add(dto);
+            return;
+        }
 
-        File[] files = srcDirectory.listFiles();
+        File[] files = srcPath.listFiles();
         if (files == null) {
-            log.error("The directory is empty: {}", srcDirectory.getAbsolutePath());
-            throw new IOException("The directory is empty: " + srcDirectory.getAbsolutePath());
+            log.warn("The directory is empty: {}", srcPath.getAbsolutePath());
+            return;
         }
-
-        int fileId = 1;
         for (File f : files) {
-            String fileName = f.getName();
-
-            RedepositIeFileDTO item = new RedepositIeFileDTO();
-            item.setFile(f);
-            item.setFileId(fileId++);
-            item.setFileOriginalName(fileName);
-            item.setFileSize(Long.toString(f.length()));
-
-            int idx = fileName.indexOf('.');
-            if (idx > 0) {
-                item.setLabel(fileName.substring(0, idx));
-            } else {
-                item.setLabel(fileName);
-            }
-            list.add(item);
-
-            //TODO: Append the properties inside the sheet
+            walkFiles(retVal, f);
         }
-        return list;
+    }
+
+    public RedepositIeFileDTO getFileProperties(File f, int fileId) {
+        String fileName = f.getName();
+
+        RedepositIeFileDTO item = new RedepositIeFileDTO();
+        item.setFile(f);
+        item.setFileId(fileId);
+        item.setFileOriginalName(fileName);
+        item.setFileSize(Long.toString(f.length()));
+
+        int idx = fileName.indexOf('.');
+        if (idx > 0) {
+            item.setLabel(fileName.substring(0, idx));
+        } else {
+            item.setLabel(fileName);
+        }
+
+        return item;
     }
 
     public boolean copyDirectory(File srcSubFolder, File destSubFolder) {
@@ -137,8 +140,10 @@ public class RedepositIEMetsGenerationHandler extends AbstractMetsGenerationHand
             }
 
             File[] files = srcSubFolder.listFiles();
-            for (File f : files) {
-                copyDirectory(f, new File(destSubFolder, f.getName()));
+            if (files != null) {
+                for (File f : files) {
+                    copyDirectory(f, new File(destSubFolder, f.getName()));
+                }
             }
         } else {
             try {

@@ -3,7 +3,7 @@ package nz.govt.natlib.ajhr.metadata;
 import java.io.File;
 
 public class MetadataSipItem {
-    private File file;
+    private File file=new File(".");
 
     private int fileId;
     private String fileOriginalName;

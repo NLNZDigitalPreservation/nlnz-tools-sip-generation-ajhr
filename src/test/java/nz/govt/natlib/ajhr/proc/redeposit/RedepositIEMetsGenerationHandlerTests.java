@@ -34,21 +34,21 @@ public class RedepositIEMetsGenerationHandlerTests {
         File destDir = MetsUtils.combinePath(rootDestDir, "OneOffIE", dto.getOriginalPID());
 
         { //Test normal case
-            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(template, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), dto, true);
+            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(template, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), dto, true, false);
             MetadataRetVal retVal = handler.process();
             assert retVal == MetadataRetVal.SUCC;
         }
 
         {
             //Test force replace case
-            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(template, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), dto, true);
+            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(template, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), dto, true, false);
             MetadataRetVal retVal = handler.process();
             assert retVal == MetadataRetVal.SUCC;
         }
 
         {
             //Test skip  case
-            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(template, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), dto, false);
+            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(template, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), dto, false, false);
             MetadataRetVal retVal = handler.process();
             assert retVal == MetadataRetVal.SKIP;
         }
@@ -56,7 +56,7 @@ public class RedepositIEMetsGenerationHandlerTests {
         {
             //Test failed case
             dto.setNumFiles("1");
-            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(template, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), dto, true);
+            RedepositIEMetsGenerationHandler handler = new RedepositIEMetsGenerationHandler(template, srcDir.getAbsolutePath(), destDir.getAbsolutePath(), dto, true, false);
             MetadataRetVal retVal = MetadataRetVal.SUCC;
 
             try {

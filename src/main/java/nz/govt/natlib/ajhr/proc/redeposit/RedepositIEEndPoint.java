@@ -10,6 +10,7 @@ import java.util.Properties;
 
 public class RedepositIEEndPoint {
     private static final String userDirectory = System.getProperty("user.dir");
+    private static final String LINE_SEPARATOR = System.lineSeparator();
     private boolean enable;
     private String srcDir;
     private String destDir;
@@ -38,6 +39,20 @@ public class RedepositIEEndPoint {
         instance.setMetsTemplateFilePath(fileTemplatePath);
 
         return instance;
+    }
+
+    public String toString() {
+        StringBuilder buf = new StringBuilder(LINE_SEPARATOR);
+        buf.append("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<").append(LINE_SEPARATOR);
+        buf.append("enable: ").append(enable).append(LINE_SEPARATOR);
+        buf.append("srcDir: ").append(srcDir).append(LINE_SEPARATOR);
+        buf.append("destDir: ").append(destDir).append(LINE_SEPARATOR);
+        buf.append("sheetName: ").append(sheetName).append(LINE_SEPARATOR);
+        buf.append("metsTemplateFilePath: ").append(metsTemplateFilePath).append(LINE_SEPARATOR);
+        buf.append("isForcedReplaced: ").append(isForcedReplaced).append(LINE_SEPARATOR);
+        buf.append("isMultipleRowsExtension: ").append(isMultipleRowsExtension).append(LINE_SEPARATOR);
+        buf.append(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>").append(LINE_SEPARATOR);
+        return buf.toString();
     }
 
     public boolean isEnable() {

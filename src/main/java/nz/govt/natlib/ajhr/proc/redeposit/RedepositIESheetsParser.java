@@ -25,75 +25,80 @@ public class RedepositIESheetsParser {
     private final static File SHEET_FILE = MetsUtils.combinePath(userDirectory, "conf", "resubmission", "Input spreadsheet for redeposit of IE with bad SM Mids.xlsx");
 
     public static List<RedepositIeDTO> parse(String sheetName, boolean isMultipleRowsExtension) throws IOException {
+        PrettyPrinter.info("Start to parse the sheet: {}, isMultipleRowsExtension: {}", sheetName, Boolean.toString(isMultipleRowsExtension));
         List<RedepositIeDTO> retVal = new ArrayList<>();
 
         InputStream inputStream = new FileInputStream(SHEET_FILE);
         Workbook workbook = new XSSFWorkbook(inputStream);
-//        Sheet sheet = workbook.getSheetAt(0);
         Sheet sheet = workbook.getSheet(sheetName);
 
-        Map<Integer, String> headerIndex = new HashMap<>();
-        Row fieldNameRow = sheet.getRow(1);
-        for (int col = 0; col <= fieldNameRow.getLastCellNum(); col++) {
-            Cell cell = fieldNameRow.getCell(col);
-            if (cell == null) {
-                break;
-            }
-            String colValue = cell.toString();
-            headerIndex.put(col, colValue);
-        }
-
-        for (int rowNum = 2; rowNum <= sheet.getLastRowNum(); rowNum++) {
-            Row row = sheet.getRow(rowNum);
-            if (row == null) {
-                continue;
-            }
-            RedepositIeDTO dto = new RedepositIeDTO();
-
-            for (int col = 0; col < headerIndex.size(); col++) {
-                Cell cell = row.getCell(col);
-                String colKey = headerIndex.get(col);
-                dto.setValue(colKey, cell);
-            }
-
-            //Ignore empty rows
-            if (StringUtils.isEmpty(dto.getOriginalPID())) {
-                PrettyPrinter.error(log, "The row is empty, rowNumber: " + rowNum);
-                continue;
-            }
-
-            retVal.add(dto);
-
-            int numOfFiles = dto.getNumFiles();
-            if (!isMultipleRowsExtension || numOfFiles <= 1) {
-                continue;
-            }
-
-            for (int fNum = 1; fNum <= numOfFiles; fNum++) {
-                Row fileRow = sheet.getRow(rowNum + fNum);
-                if (fileRow == null) {
+        try {
+            Map<Integer, String> headerIndex = new HashMap<>();
+            Row fieldNameRow = sheet.getRow(1);
+            for (int col = 0; col <= fieldNameRow.getLastCellNum(); col++) {
+                Cell cell = fieldNameRow.getCell(col);
+                if (cell == null) {
                     break;
                 }
-                RedepositIeFileDTO fileDTO = new RedepositIeFileDTO();
-                for (int col = 0; col < headerIndex.size(); col++) {
-                    Cell cell = fileRow.getCell(col);
-                    if (cell == null) {
-                        continue;
-                    }
-                    String colKey = headerIndex.get(col);
-                    String colValue = cell.toString();
-                    fileDTO.setValue(colKey, colValue);
-                }
-
-                if (!fileDTO.getOriginalPID().contains("-")) {
-                    throw new IOException(String.format("[%s]: Invalid sub-item: %s, in line: %d", dto.getOriginalPID(), fileDTO.getOriginalPID(), (rowNum + fNum + 1)));
-                }
-
-                fileDTO.setFileId(fNum);
-                dto.getFiles().add(fileDTO);
+                String colValue = cell.toString();
+                headerIndex.put(col, colValue);
             }
 
-            rowNum += numOfFiles;
+            for (int rowNum = 2; rowNum <= sheet.getLastRowNum(); rowNum++) {
+                Row row = sheet.getRow(rowNum);
+                if (row == null) {
+                    continue;
+                }
+                RedepositIeDTO dto = new RedepositIeDTO();
+
+                for (int col = 0; col < headerIndex.size(); col++) {
+                    Cell cell = row.getCell(col);
+                    String colKey = headerIndex.get(col);
+                    dto.setValue(colKey, cell);
+                }
+
+                //Ignore empty rows
+                if (StringUtils.isEmpty(dto.getOriginalPID())) {
+                    PrettyPrinter.error(log, "The row is empty, rowNumber: " + rowNum);
+                    continue;
+                }
+
+                retVal.add(dto);
+
+                int numOfFiles = dto.getNumFiles();
+                if (!isMultipleRowsExtension || numOfFiles <= 1) {
+                    continue;
+                }
+
+                for (int fNum = 1; fNum <= numOfFiles; fNum++) {
+                    Row fileRow = sheet.getRow(rowNum + fNum);
+                    if (fileRow == null) {
+                        break;
+                    }
+                    RedepositIeFileDTO fileDTO = new RedepositIeFileDTO();
+                    for (int col = 0; col < headerIndex.size(); col++) {
+                        Cell cell = fileRow.getCell(col);
+                        if (cell == null) {
+                            continue;
+                        }
+                        String colKey = headerIndex.get(col);
+                        String colValue = cell.toString();
+                        fileDTO.setValue(colKey, colValue);
+                    }
+
+                    if (!fileDTO.getOriginalPID().contains("-")) {
+                        throw new IOException(String.format("[%s]: Invalid sub-item: %s, in line: %d", dto.getOriginalPID(), fileDTO.getOriginalPID(), (rowNum + fNum + 1)));
+                    }
+
+                    fileDTO.setFileId(fNum);
+                    dto.getFiles().add(fileDTO);
+                }
+
+                rowNum += numOfFiles;
+            }
+        } finally {
+            inputStream.close();
+            PrettyPrinter.info("Finished parse sheet: {}, rows found: {}", sheetName, Integer.toString(retVal.size()));
         }
         return retVal;
     }

@@ -35,9 +35,10 @@ public class MainApplication implements CommandLineRunner {
     public void run(String... args) throws Exception {
         MultiThreadsPrint.init();
 
-        PrettyPrinter.info("Start processing");
+        PrettyPrinter.info("Start processing ajhr");
         metsGenerationProcessor.walkSourceFolder();
 
+        PrettyPrinter.info("Start processing resubmission");
         redepositIEFolderScanProcessor.process();
 
         PrettyPrinter.info(log, "Finished");

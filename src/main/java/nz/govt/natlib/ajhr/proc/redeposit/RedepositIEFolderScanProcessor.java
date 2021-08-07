@@ -25,6 +25,7 @@ public class RedepositIEFolderScanProcessor {
 
     public void process() {
         for (RedepositIEEndPoint endPoint : endPoints) {
+            PrettyPrinter.info("Is going to process: {}", endPoint.toString());
             process(endPoint);
         }
     }
@@ -33,6 +34,8 @@ public class RedepositIEFolderScanProcessor {
         if (!endPoint.isEnable()) {
             PrettyPrinter.info("[{}] is disabled, skipped", endPoint.getSheetName());
             return;
+        } else {
+            PrettyPrinter.info(">>>Start to process: {}", endPoint.getSheetName());
         }
 
         //Initial sheet values

@@ -16,7 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public class AJHRMetsGenerationHandlerTests {
-    private static final String ROOT_FOLDER = "C:\\Users\\leefr\\workspace\\tmp";
+    private static final String ROOT_FOLDER = "C:/Users/leefr/VM_SHARED/testdata/NDHA_resubmission_examples";
     private static final String userDirectory = System.getProperty("user.dir");
     private static final String NAME_DEFAULT_TEMPLATE = "mets-template-ajhr.xml";
     private static AJHRMetsGenerationHandler testInstance;

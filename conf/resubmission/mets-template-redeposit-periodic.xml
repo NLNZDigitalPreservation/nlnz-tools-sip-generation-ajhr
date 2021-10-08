@@ -7,7 +7,7 @@
 					<dcterms:accrualPeriodicity>${metProp.ieDmdNo}</dcterms:accrualPeriodicity>
                     <dc:date>${metProp.ieDmdYear}</dc:date>
                     <dcterms:available>${metProp.ieDmdMonth}</dcterms:available>
-                    <dc:coverage>${metProp.ieDmdDay}</dc:coverage>
+                    <dc:coverage></dc:coverage>
                 </dc:record>
             </mets:xmlData>
         </mets:mdWrap>
@@ -66,7 +66,7 @@
 								<key id="eventDateTime">${metProp.eventDateTime}</key>
 								<key id="eventOutcome1">SUCCESS</key>
 								<key id="eventOutcomeDetail1">Content redeposited to correct Structure Map ID errors.</key>
-								<key id="eventOutcomeDetailExtension1">Original IE created ${metProp.ieCreationDate}</key>
+								<key id="eventOutcomeDetailExtension1">Original IE created ${metProp.getIeCreationDate()}</key>
  							</record>
 						</section>
 					</dnx>				

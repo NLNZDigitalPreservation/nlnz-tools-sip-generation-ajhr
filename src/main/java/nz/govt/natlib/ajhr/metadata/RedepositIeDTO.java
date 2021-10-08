@@ -5,12 +5,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
 public class RedepositIeDTO {
+    private static final DateTimeFormatter _LOCAL_DATE_FORMAT_PATTERN = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+    private static final DateTimeFormatter _LOCAL_DATETIME_FORMAT_PATTERN = DateTimeFormatter.ofPattern("EEE MMM dd HH:mm:ss 'NZST' yyyy");
     private String originalPID;
     private String dcTitle;
     private String dcType;
@@ -39,7 +42,8 @@ public class RedepositIeDTO {
 
     public RedepositIeDTO() {
         LocalDateTime ldt = LocalDateTime.now();
-        this.eventDateTime = String.format("%s %s %02d %s NZDT %d", ldt.getDayOfWeek().name(), ldt.getMonth().name(), ldt.getDayOfMonth(), ldt.format(DateTimeFormatter.ISO_LOCAL_TIME), ldt.getYear());
+//        this.eventDateTime = String.format("%s %s %02d %s NZDT %d", ldt.getDayOfWeek().name(), ldt.getMonth().name(), ldt.getDayOfMonth(), ldt.format(DateTimeFormatter.ISO_LOCAL_TIME), ldt.getYear());
+        this.eventDateTime = ldt.format(_LOCAL_DATETIME_FORMAT_PATTERN);
     }
 
     public String getOriginalPID() {
@@ -96,11 +100,17 @@ public class RedepositIeDTO {
 
     public void setPolicyId(String policyId) {
         this.policyId = Long.toString(MetsUtils.parseNumber(policyId));
-        ;
     }
 
     public String getIeCreationDate() {
-        return ieCreationDate;
+//        if (this.ieCreationDate.equals("-")) {
+//            return this.ieCreationDate;
+//        }
+//
+//        LocalDate localDate = LocalDate.parse(this.ieCreationDate, DateTimeFormatter.ISO_LOCAL_DATE);
+//
+//        return localDate.format(_LOCAL_DATE_FORMAT_PATTERN);
+        return this.ieCreationDate;
     }
 
     public void setIeCreationDate(String ieCreationDate) {
@@ -156,7 +166,7 @@ public class RedepositIeDTO {
     }
 
     public String getFileCreationDate() {
-        return fileCreationDate;
+        return this.fileCreationDate;
     }
 
     public void setFileCreationDate(String fileCreationDate) {

@@ -87,7 +87,7 @@ public class RedepositIESheetsParser {
                     }
 
                     if (!fileDTO.getOriginalPID().contains("-")) {
-                        throw new IOException(String.format("[%s]: Invalid sub-item: %s, in line: %d", dto.getOriginalPID(), fileDTO.getOriginalPID(), (rowNum + fNum + 1)));
+                        throw new IOException(String.format("[%s] [%s]: Invalid sub-item: %s, in line: %d", sheetName, dto.getOriginalPID(), fileDTO.getOriginalPID(), (rowNum + fNum + 1)));
                     }
 
                     fileDTO.setFileId(fNum);

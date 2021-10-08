@@ -19,7 +19,7 @@
                                 <key id="IEEntityType">OneOffIE</key>
                             </record>
                         </section>
-                        <section id="objectIdentifer">
+                        <section id="objectIdentifier">
                             <record>
                                 <key id="objectIdentifierType">ALMAMMS</key>
                                 <key id="objectIdentifierValue">${metProp.almaMms}</key>
@@ -55,7 +55,7 @@
                                 <key id="eventDateTime">Date of SIP generation</key>
                                 <key id="eventOutcome1">SUCCESS</key>
                                 <key id="eventOutcomeDetail1">Content redeposited to correct Structure Map ID errors.</key>
-                                <key id="event Outcome Detail Extension1">${metProp.ieCreationDate}</key>
+                                <key id="event Outcome Detail Extension1">${metProp.getIeCreationDate()}</key>
                             </record>
                         </section>
                     </dnx>

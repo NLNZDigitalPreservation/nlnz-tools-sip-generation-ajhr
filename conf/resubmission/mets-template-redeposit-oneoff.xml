@@ -55,7 +55,7 @@
                                 <key id="eventDateTime">${metProp.eventDateTime}</key>
                                 <key id="eventOutcome1">SUCCESS</key>
                                 <key id="eventOutcomeDetail1">Content redeposited to correct Structure Map ID errors.</key>
-                                <key id="event Outcome Detail Extension1">${metProp.getIeCreationDate()}</key>
+                                <key id="eventOutcomeDetailExtension1">Original IE created ${metProp.getIeCreationDate()}</key>
                             </record>
                         </section>
                     </dnx>

@@ -1,6 +1,7 @@
 package nz.govt.natlib.ajhr.app;
 
 import nz.govt.natlib.ajhr.proc.MetsFolderScanProcessor;
+import nz.govt.natlib.ajhr.util.AJHRUtils;
 import nz.govt.natlib.ajhr.util.MultiThreadsPrint;
 import nz.govt.natlib.ajhr.util.PrettyPrinter;
 import org.slf4j.Logger;
@@ -44,6 +45,8 @@ public class MainApplication implements CommandLineRunner {
             PrettyPrinter.info("Succeed to parse arguments");
             processor.setSrcDir(properties.getProperty("srcDir"));
             processor.setDestDir(properties.getProperty("destDir"));
+            processor.setStartDate(Integer.parseInt(properties.getProperty("startDate")));
+            processor.setEndDate(Integer.parseInt(properties.getProperty("endDate")));
             processor.setForcedReplaced(Boolean.parseBoolean(properties.getProperty("forceReplace")));
             processor.setMaxThreads(Integer.parseInt(properties.getProperty("maxThreads")));
             processor.init();
@@ -111,11 +114,29 @@ public class MainApplication implements CommandLineRunner {
             }
         }
 
+        if (!properties.containsKey("startDate")) {
+            properties.put("startDate", "19540101");
+            PrettyPrinter.info("--startDate={}", properties.getProperty("startDate"));
+        } else if (!AJHRUtils.isValidDate(properties.getProperty("startDate"))) {
+            PrettyPrinter.error("Invalid arguments");
+            printUsage();
+            return false;
+        }
+
+        if (!properties.containsKey("endDate")) {
+            properties.put("endDate", "19751231");
+            PrettyPrinter.info("--endDate={}", properties.getProperty("endDate"));
+        } else if (!AJHRUtils.isValidDate(properties.getProperty("endDate"))) {
+            PrettyPrinter.error("Invalid arguments");
+            printUsage();
+            return false;
+        }
+
         return true;
     }
 
     private void printUsage() {
-        String msg = "Usage: java -Xms512M -Xmx1024M -jar ajhr.jar [--srcDir=folder] [--destDir=folder] [--forceReplace=true] [--maxThreads=5]";
+        String msg = "Usage: java -Xms512M -Xmx1024M -jar ajhr.jar [--srcDir=folder] [--destDir=folder] [--forceReplace=true] [--startDate] [--endDate] [--maxThreads=5]";
         PrettyPrinter.info(msg);
     }
 }

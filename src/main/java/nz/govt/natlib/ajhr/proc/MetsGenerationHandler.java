@@ -29,7 +29,7 @@ public class MetsGenerationHandler {
     public static final String READY_FOR_INGESTION_MARK = "ready-for-ingestion-FOLDER-COMPLETED";
     private static final String STREAM_FOLDER = "content" + File.separator + "streams";
     private static final String PRESERVATION_MASTER_STREAM_FOLDER = STREAM_FOLDER + File.separator + PRESERVATION_MASTER_FOLDER;
-    private static final String MODIFIED_MASTER_STREAM_FOLDER = STREAM_FOLDER + File.separator + MODIFIED_MASTER_FOLDER;
+//    private static final String MODIFIED_MASTER_STREAM_FOLDER = STREAM_FOLDER + File.separator + MODIFIED_MASTER_FOLDER;
 
     private static DigestUtils _digester = null;
 
@@ -49,7 +49,8 @@ public class MetsGenerationHandler {
     private boolean isForced = false;
 
     public MetsGenerationHandler(Template metTemplate, File rootDirectory, File subFolder, String targetRootLocation, boolean isForced) {
-        String sipFolder = String.format("%s-%s", rootDirectory.getName(), subFolder.getName());
+//        String sipFolder = String.format("%s-%s", rootDirectory.getName(), subFolder.getName());
+        String sipFolder = rootDirectory.getName();
         this.targetRootLocation = AJHRUtils.combinePath(targetRootLocation, sipFolder);
         this.metTemplate = metTemplate;
         this.rootDirectory = rootDirectory;
@@ -135,13 +136,13 @@ public class MetsGenerationHandler {
 
     public String createMetsXmlAndCopyStreams() throws IOException, TemplateException, NoSuchAlgorithmException {
         MetadataMetProp metProp = MetadataMetProp.getInstance(this.rootDirectory.getName(), this.subFolder.getName());
-        List<MetadataSipItem> pmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, PRESERVATION_MASTER_FOLDER), AJHRUtils.combinePath(this.targetRootLocation, PRESERVATION_MASTER_STREAM_FOLDER));
-        List<MetadataSipItem> mmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER), AJHRUtils.combinePath(this.targetRootLocation, MODIFIED_MASTER_STREAM_FOLDER));
+        List<MetadataSipItem> pmList = handleFiles(metProp, this.subFolder, AJHRUtils.combinePath(this.targetRootLocation, PRESERVATION_MASTER_STREAM_FOLDER));
+//        List<MetadataSipItem> mmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER), AJHRUtils.combinePath(this.targetRootLocation, MODIFIED_MASTER_STREAM_FOLDER));
 
         ModelMap model = new ModelMap();
         model.addAttribute("metProp", metProp);
         model.addAttribute("pmList", pmList);
-        model.addAttribute("mmList", mmList);
+//        model.addAttribute("mmList", mmList);
 
         StringWriter writer = new StringWriter();
 
@@ -171,12 +172,14 @@ public class MetsGenerationHandler {
             item.setFileEntityType(getFileEntityTypeFromExt(f.getName()));
             item.setFileSize(Long.toString(f.length()));
             item.setFixityValue(fileAtomicHandler.getDigestString());
+            item.setLabel(fileName);
 
-            if (fileName.toLowerCase().startsWith(metProp.getAccrualPeriodicity().toLowerCase())) {
-                item.setLabel(fileName.substring(metProp.getAccrualPeriodicity().length() + 1));
-            } else {
-                item.setLabel(fileName);
-            }
+
+//            if (fileName.toLowerCase().startsWith(metProp.getAccrualPeriodicity().toLowerCase())) {
+//                item.setLabel(fileName.substring(metProp.getAccrualPeriodicity().length() + 1));
+//            } else {
+//                item.setLabel(fileName);
+//            }
             list.add(item);
         }
         return list;

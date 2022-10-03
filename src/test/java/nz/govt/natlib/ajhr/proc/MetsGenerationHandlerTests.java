@@ -15,7 +15,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public class MetsGenerationHandlerTests {
-    private static final String ROOT_FOLDER = "C:\\Users\\leefr\\workspace\\tmp";
+    private static final String ROOT_FOLDER = "/home/jeremy/workspace/testdata";
     private static MetsGenerationHandler testInstance;
 
     @BeforeAll
@@ -23,10 +23,10 @@ public class MetsGenerationHandlerTests {
         MetsTemplateService metsTemplateService = new MetsTemplateService();
         Template template = metsTemplateService.loadTemplate();
 
-        File rootFolder = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G");
-        File subFolder = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01");
-        String targetFolder = new File(ROOT_FOLDER, "AJHR_TEST").getAbsolutePath();
-        testInstance = new MetsGenerationHandler(template, rootFolder, subFolder, targetFolder, true);
+        File rootFolder = new File(ROOT_FOLDER, "TDN/1955/TDN_19550113");
+        File subFolder = new File(ROOT_FOLDER, "TDN/1955/TDN_19550113/PM_01");
+        String targetFolder = new File(ROOT_FOLDER, "TDN_TEST").getAbsolutePath();
+        testInstance = new MetsGenerationHandler(template, rootFolder, subFolder, targetFolder, false);
     }
 
     @Test
@@ -46,70 +46,72 @@ public class MetsGenerationHandlerTests {
         assert metsXml.length() > 0;
     }
 
-    @Test
-    public void testParseMetProp() {
-        MetadataMetProp metProp = MetadataMetProp.getInstance(testInstance.getRootDirectory().getName(), testInstance.getSubFolder().getName());
-        assert metProp != null;
-        assert metProp.getTitle().equals("AJHR");
-        assert metProp.getYear().equals("1861");
-        assert metProp.getVolume().equals("I_A-G");
-        assert metProp.getAccrualPeriodicity().equals("A-01");
-    }
+//    @Test
+//    public void testParseMetProp() {
+//        MetadataMetProp metProp = MetadataMetProp.getInstance(testInstance.getRootDirectory().getName(), testInstance.getSubFolder().getName());
+//        assert metProp != null;
+//        assert metProp.getTitle().equals("TDN");
+//        assert metProp.getDate().equals("19550113");
+//        assert metProp.getYear().equals("1955");
+//        assert metProp.getMonth().equals("01");
+//        assert metProp.getDay().equals("13");
+//        assert metProp.getMmsId().equals("9916300343502836");
+//    }
 
-    @Test
-    public void testHandleFiles() throws IOException, NoSuchAlgorithmException {
-        File folder = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01/MM_01");
-        List<MetadataSipItem> list = testInstance.handleFiles(null, folder, FileUtils.getTempDirectory());
-        assert list != null;
-        assert list.size() > 0;
+//    @Test
+//    public void testHandleFiles() throws IOException, NoSuchAlgorithmException {
+//        File folder = new File(ROOT_FOLDER, "TDN/1955/TDN_19550113/PM_01");
+//        List<MetadataSipItem> list = testInstance.handleFiles(null, folder, FileUtils.getTempDirectory());
+//        assert list != null;
+//        assert list.size() > 0;
+//
+//        list.forEach(System.out::println);
+//
+//        MetadataSipItem item = list.get(0);
+//        assert item.getFileId() == 1;
+//        assert item.getFixityValue().length() > 0;
+//    }
 
-        list.forEach(System.out::println);
+//    @Test
+//    public void testGetFileEntityTypeFromExt() {
+//        {
+//            String fileName = "mets.XML";
+//            String entityType = testInstance.getFileEntityTypeFromExt(fileName);
+//            assert entityType.equals("METS");
+//        }
+//
+//        {
+//            String fileName = "my_mets.xml";
+//            String entityType = testInstance.getFileEntityTypeFromExt(fileName);
+//            assert entityType.equals("METS");
+//        }
+//
+//        {
+//            String fileName = "mets_test.XML";
+//            String entityType = testInstance.getFileEntityTypeFromExt(fileName);
+//            assert entityType.equals("ALTO");
+//        }
+//
+//        {
+//            String fileName = "test.tif";
+//            String entityType = testInstance.getFileEntityTypeFromExt(fileName);
+//            assert entityType.equals("TIFF");
+//        }
+//    }
 
-        MetadataSipItem item = list.get(0);
-        assert item.getFileId() == 1;
-        assert item.getFixityValue().length() > 0;
-    }
-
-    @Test
-    public void testGetFileEntityTypeFromExt() {
-        {
-            String fileName = "mets.XML";
-            String entityType = testInstance.getFileEntityTypeFromExt(fileName);
-            assert entityType.equals("METS");
-        }
-
-        {
-            String fileName = "my_mets.xml";
-            String entityType = testInstance.getFileEntityTypeFromExt(fileName);
-            assert entityType.equals("METS");
-        }
-
-        {
-            String fileName = "mets_test.XML";
-            String entityType = testInstance.getFileEntityTypeFromExt(fileName);
-            assert entityType.equals("ALTO");
-        }
-
-        {
-            String fileName = "test.tif";
-            String entityType = testInstance.getFileEntityTypeFromExt(fileName);
-            assert entityType.equals("TIFF");
-        }
-    }
-
-    @Test
-    public void testDigest() throws IOException {
-        File f = new File(ROOT_FOLDER, "AJHR_ORIGINAL/AJHR_1861_I_A-G/A-01/MM_01/A-01_0001.xml");
-        String fixityValue = testInstance.digest(f);
-        assert fixityValue != null;
-        assert fixityValue.length() > 0;
-    }
-
-    @Test
-    public void testDigestOfficial() {
-        File f = new File("src/test/resources/image.tif");
-        String digest = testInstance.digest(f);
-        assert digest != null;
-        assert digest.equals("48c0185f9c5568a7912ba9cba03071a8");
-    }
+//    @Test
+//    public void testDigest() throws IOException {
+//        File f = new File(ROOT_FOLDER, "TDN/1955/TDN_19550113/PM_01/0001.tif");
+//        String fixityValue = testInstance.digest(f);
+//        assert fixityValue != null;
+//        assert fixityValue.length() > 0;
+//    }
+//
+//    @Test
+//    public void testDigestOfficial() {
+//        File f = new File("src/test/resources/image.tif");
+//        String digest = testInstance.digest(f);
+//        assert digest != null;
+//        assert digest.equals("48c0185f9c5568a7912ba9cba03071a8");
+//    }
 }

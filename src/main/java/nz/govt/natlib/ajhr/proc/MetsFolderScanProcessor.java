@@ -23,6 +23,8 @@ public class MetsFolderScanProcessor {
     private int maxThreads = 1;
     private String srcDir;
     private String destDir;
+    private int startDate;
+    private int endDate;
     private boolean isForcedReplaced;
     @Autowired
     private MetsTemplateService metsTemplateService;
@@ -93,7 +95,11 @@ public class MetsFolderScanProcessor {
             return;
         }
         for (File subFolder : subFolders) {
-            if (!subFolder.isDirectory() || !isValidSubFolder(subFolder)) {
+//            if (!subFolder.isDirectory() || !isValidSubFolder(subFolder)) {
+//                log.error("Skipped invalid subfolder: {}", subFolder.getAbsolutePath());
+//                continue;
+//            }
+            if (!subFolder.isDirectory() || !subFolder.getName().endsWith(MetsGenerationHandler.PRESERVATION_MASTER_FOLDER)) {
                 log.error("Skipped invalid subfolder: {}", subFolder.getAbsolutePath());
                 continue;
             }
@@ -130,15 +136,19 @@ public class MetsFolderScanProcessor {
     }
 
     public boolean isValidSubFolder(File directory) {
-        File pmFolder = new File(directory, MetsGenerationHandler.PRESERVATION_MASTER_FOLDER);
-        File mmFolder = new File(directory, MetsGenerationHandler.MODIFIED_MASTER_FOLDER);
+       File pmFolder = new File(directory, MetsGenerationHandler.PRESERVATION_MASTER_FOLDER);
+       File mmFolder = new File(directory, MetsGenerationHandler.MODIFIED_MASTER_FOLDER);
 
         return pmFolder.exists() && pmFolder.isDirectory() && mmFolder.exists() && mmFolder.isDirectory();
     }
 
     public boolean isValidRootFolder(File directory) {
         MetadataMetProp metProp = MetadataMetProp.getInstance(directory.getName(), "");
-        return metProp != null;
+        if (metProp != null) {
+            int directoryDate = Integer.parseInt(metProp.getDate());
+            return directoryDate >= startDate && directoryDate <= endDate;
+        }
+        return false;
     }
 
     public int getMaxThreads() {
@@ -163,6 +173,22 @@ public class MetsFolderScanProcessor {
 
     public void setDestDir(String destDir) {
         this.destDir = destDir;
+    }
+
+    public int getStartDate() {
+        return startDate;
+    }
+
+    public void setStartDate(int startDate) {
+        this.startDate = startDate;
+    }
+
+    public int getEndDate() {
+        return endDate;
+    }
+
+    public void setEndDate(int endDate) {
+        this.endDate = endDate;
     }
 
     public boolean isForcedReplaced() {

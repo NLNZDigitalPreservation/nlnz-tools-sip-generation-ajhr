@@ -1,13 +1,24 @@
 package nz.govt.natlib.ajhr.metadata;
 
+import nz.govt.natlib.ajhr.util.AJHRUtils;
 import org.apache.commons.lang3.StringUtils;
 
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+
 public class MetadataMetProp {
-    private static final String[] TITLE_LIST = {"AJHR"};
+    private static final String[] TITLE_LIST = {"TDN"};
     private String title;
     private String year;
-    private String volume;
-    private String accrualPeriodicity;
+    private String month;
+    private String day;
+    private String date;
+    private String mmsId;
+
+    public MetadataMetProp() {
+    }
+//    private String volume;
+//    private String accrualPeriodicity;
 
     public static MetadataMetProp getInstance(String rootFolderName, String accrualPeriodicity) {
         int idxStart = 0, idxEnd = rootFolderName.indexOf('_', idxStart);
@@ -20,26 +31,40 @@ public class MetadataMetProp {
         }
 
         idxStart = idxEnd + 1;
-        idxEnd = rootFolderName.indexOf('_', idxStart);
+        idxEnd = rootFolderName.length();
         if (idxEnd < 0) {
             return null;
         }
-        String year = rootFolderName.substring(idxStart, idxEnd);
-        if (!isValidYear(year)) {
+        String date = rootFolderName.substring(idxStart, idxEnd);
+        if (!AJHRUtils.isValidDate(date)) {
             return null;
         }
+        String year = date.substring(0,4);
+        String month = date.substring(4,6);
+        String day = date.substring(6,8);
 
-        idxStart = idxEnd + 1;
-        String volume = rootFolderName.substring(idxStart);
-        if (StringUtils.isEmpty(volume)) {
-            return null;
+//        idxStart = idxEnd + 1;
+//        String volume = rootFolderName.substring(idxStart);
+//        if (StringUtils.isEmpty(volume)) {
+//            return null;
+//        }
+        String mmsId;
+        if (Integer.parseInt(date) < 19600620) {
+            mmsId = "9916300343502836";
+        } else {
+            mmsId = "9919246535602836";
         }
 
         MetadataMetProp metProp = new MetadataMetProp();
         metProp.setTitle(title);
+        metProp.setDate(date);
         metProp.setYear(year);
-        metProp.setVolume(volume);
-        metProp.setAccrualPeriodicity(accrualPeriodicity);
+        metProp.setMonth(month);
+        metProp.setDay(day);
+        metProp.setMmsId(mmsId);
+
+//        metProp.setVolume(volume);
+//        metProp.setAccrualPeriodicity(accrualPeriodicity);
 
         return metProp;
     }
@@ -56,14 +81,6 @@ public class MetadataMetProp {
         return false;
     }
 
-    private static boolean isValidYear(String year) {
-        if (StringUtils.isEmpty(year)) {
-            return false;
-        }
-
-        return year.length() == 4 && (year.startsWith("18") || year.startsWith("19") || year.startsWith("20"));
-    }
-
     public String getTitle() {
         return title;
     }
@@ -72,12 +89,12 @@ public class MetadataMetProp {
         this.title = title;
     }
 
-    public String getVolume() {
-        return volume;
+    public String getDate() {
+        return date;
     }
 
-    public void setVolume(String volume) {
-        this.volume = volume;
+    public void setDate(String date) {
+        this.date = date;
     }
 
     public String getYear() {
@@ -88,11 +105,27 @@ public class MetadataMetProp {
         this.year = year;
     }
 
-    public String getAccrualPeriodicity() {
-        return accrualPeriodicity;
+    public String getMonth() {
+        return month;
     }
 
-    public void setAccrualPeriodicity(String accrualPeriodicity) {
-        this.accrualPeriodicity = accrualPeriodicity;
+    public void setMonth(String month) {
+        this.month = month;
+    }
+
+    public String getDay() {
+        return day;
+    }
+
+    public void setDay(String day) {
+        this.day = day;
+    }
+
+    public String getMmsId() {
+        return mmsId;
+    }
+
+    public void setMmsId(String mmsId) {
+        this.mmsId = mmsId;
     }
 }

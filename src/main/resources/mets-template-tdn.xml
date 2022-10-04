@@ -151,10 +151,10 @@
     </mets:amdSec>
     </#list>
     <mets:fileSec>
-        <mets:fileGrp ADMID="rep1-amd" ID="rep1" USE="VIEW">
+        <mets:fileGrp ID="rep1" ADMID="rep1-amd">
             <#list pmList as pm>
-            <mets:file ADMID="fid${pm.fileId}-1-amd" CHECKSUM="${pm.fixityValue}" CHECKSUMTYPE="${pm.fixityType}" GROUPID="${pm.fileId}" ID="fid${pm.fileId}-1" MIMETYPE="">
-                <mets:FLocat LOCTYPE="URL" xlin:href="PM_01/${pm.fileOriginalName}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
+            <mets:file ID="fid${pm.fileId}-1" ADMID="fid${pm.fileId}-1-amd">
+                <mets:FLocat LOCTYPE="URL" xlin:href="${pm.fileOriginalName}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
             </mets:file>
             </#list>
         </mets:fileGrp>

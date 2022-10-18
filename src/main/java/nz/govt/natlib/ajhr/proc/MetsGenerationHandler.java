@@ -162,6 +162,7 @@ public class MetsGenerationHandler {
         int fileId = 1;
         for (File f : files) {
             String fileName = f.getName();
+            String label = f.getName().replaceAll("(?<!^)[.].*", "");
             MetsAtomicFileHandler fileAtomicHandler = new MetsAtomicFileHandler(f, new File(destDirectory, f.getName()));
             boolean retVal = fileAtomicHandler.md5DigestAndCopy();
 
@@ -172,7 +173,7 @@ public class MetsGenerationHandler {
             item.setFileEntityType(getFileEntityTypeFromExt(f.getName()));
             item.setFileSize(Long.toString(f.length()));
             item.setFixityValue(fileAtomicHandler.getDigestString());
-            item.setLabel(fileName);
+            item.setLabel(label);
 
 
 //            if (fileName.toLowerCase().startsWith(metProp.getAccrualPeriodicity().toLowerCase())) {

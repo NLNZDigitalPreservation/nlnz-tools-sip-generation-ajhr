@@ -111,6 +111,7 @@
                     <dnx xmlns="http://www.exlibrisgroup.com/dps/dnx">
                         <section id="generalFileCharacteristics">
                             <record>
+                                <key id="label">${pm.label}</key>
                                 <key id="fileOriginalName">${pm.fileOriginalName}</key>
                                 <key id="fileSizeBytes">${pm.fileSize}</key>
                                 <key id="FileEntityType">${pm.fileEntityType}</key>
@@ -154,13 +155,13 @@
         <mets:fileGrp ID="rep1" ADMID="rep1-amd">
             <#list pmList as pm>
             <mets:file ID="fid${pm.fileId}-1" ADMID="fid${pm.fileId}-1-amd">
-                <mets:FLocat LOCTYPE="URL" xlin:href="${pm.fileOriginalName}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
+                <mets:FLocat LOCTYPE="URL" xlin:href="PM_01/${pm.fileOriginalName}" xmlns:xlin="http://www.w3.org/1999/xlink"/>
             </mets:file>
             </#list>
         </mets:fileGrp>
     </mets:fileSec>
     <mets:structMap ID="rep1-1" TYPE="PHYSICAL">
-        <mets:div LABEL="PRESERVATION_MASTER;VIEW">
+        <mets:div LABEL="Preservation Master">
             <mets:div LABEL="Table of Contents">
                 <#list pmList as pm>
                 <mets:div LABEL="${pm.label}" TYPE="FILE">

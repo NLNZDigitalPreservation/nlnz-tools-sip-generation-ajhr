@@ -6,7 +6,7 @@
                     <dc:language>en-nz</dc:language>
                     <dc:title>${metProp.title}</dc:title>
                     <dc:date>${metProp.year}</dc:date>
-                    <dc:available>${metProp.month}</dc:available>
+                    <dcterms:available>${metProp.month}</dcterms:available>
                     <dc:coverage>${metProp.day}</dc:coverage>
                 </dc:record>
             </mets:xmlData>

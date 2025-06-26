@@ -9,15 +9,17 @@ import java.io.File;
 import java.io.IOException;
 
 public class MetsFolderScanProcessorTests {
-    private static final String ROOT_FOLDER = "/home/jeremy/workspace/testdata";
+    private static final String ROOT_FOLDER = "/mnt/e/testdata";
     private static MetsFolderScanProcessor processor;
 
     @BeforeAll
     public static void init() {
         processor = new MetsFolderScanProcessor();
         ReflectionTestUtils.setField(processor, "maxThreads", 5);
-        ReflectionTestUtils.setField(processor, "srcDir", new File(ROOT_FOLDER, "TDN").getAbsolutePath());
-        ReflectionTestUtils.setField(processor, "destDir", new File(ROOT_FOLDER, "TDN_TEST").getAbsolutePath());
+        ReflectionTestUtils.setField(processor, "srcDir", new File(ROOT_FOLDER, "MEX").getAbsolutePath());
+        ReflectionTestUtils.setField(processor, "destDir", new File(ROOT_FOLDER, "MEX_TEST").getAbsolutePath());
+        ReflectionTestUtils.setField(processor, "startDate", 19210101);
+        ReflectionTestUtils.setField(processor, "endDate", 19210103);
         ReflectionTestUtils.setField(processor, "isForcedReplaced", true);
         ReflectionTestUtils.setField(processor, "metsTemplateService", new MetsTemplateService());
         processor.init();
@@ -26,7 +28,7 @@ public class MetsFolderScanProcessorTests {
     @Test
     public void testIsValidFolder() {
         {
-            File folder = new File(ROOT_FOLDER, "TDN/1955/TDN_19550113");
+            File folder = new File(ROOT_FOLDER, "MEX/1921/MEX_19210103");
             boolean retVal = processor.isValidRootFolder(folder);
             assert retVal;
         }

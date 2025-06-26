@@ -26,7 +26,7 @@ public class MetsGenerationHandler {
 
     public static final String PRESERVATION_MASTER_FOLDER = "PM_01";
     public static final String MODIFIED_MASTER_FOLDER = "MM_01";
-    public static final String READY_FOR_INGESTION_MARK = "ready-for-ingestion-FOLDER-COMPLETED";
+    public static final String READY_FOR_INGESTION_MARK = "ready-for-permissions";
     private static final String STREAM_FOLDER = "content" + File.separator + "streams";
     private static final String PRESERVATION_MASTER_STREAM_FOLDER = STREAM_FOLDER + File.separator + PRESERVATION_MASTER_FOLDER;
 //    private static final String MODIFIED_MASTER_STREAM_FOLDER = STREAM_FOLDER + File.separator + MODIFIED_MASTER_FOLDER;

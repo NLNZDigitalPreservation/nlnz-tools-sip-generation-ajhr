@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 public class MetadataMetProp {
-    private static final String[] TITLE_LIST = {"TDN"};
+    private static final String[] TITLE_LIST = {"MEX"};
     private String title;
     private String year;
     private String month;
@@ -48,12 +48,12 @@ public class MetadataMetProp {
 //        if (StringUtils.isEmpty(volume)) {
 //            return null;
 //        }
-        String mmsId;
-        if (Integer.parseInt(date) < 19600620) {
-            mmsId = "9916300343502836";
-        } else {
-            mmsId = "9919246535602836";
-        }
+//        String mmsId = "9914705253502836" ;
+//        if (Integer.parseInt(date) < 19600620) {
+//            mmsId = "9916300343502836";
+//        } else {
+//            mmsId = "9919246535602836";
+//        }
 
         MetadataMetProp metProp = new MetadataMetProp();
         metProp.setTitle(title);
@@ -61,7 +61,7 @@ public class MetadataMetProp {
         metProp.setYear(year);
         metProp.setMonth(month);
         metProp.setDay(day);
-        metProp.setMmsId(mmsId);
+//        metProp.setMmsId(mmsId);
 
 //        metProp.setVolume(volume);
 //        metProp.setAccrualPeriodicity(accrualPeriodicity);

@@ -5,6 +5,7 @@ import freemarker.template.TemplateException;
 import nz.govt.natlib.ajhr.metadata.MetadataMetProp;
 import nz.govt.natlib.ajhr.metadata.MetadataRetVal;
 import nz.govt.natlib.ajhr.metadata.MetadataSipItem;
+import nz.govt.natlib.ajhr.metadata.PapersPastTitle;
 import nz.govt.natlib.ajhr.util.AJHRUtils;
 import nz.govt.natlib.ajhr.util.PrettyPrinter;
 import org.apache.commons.lang3.exception.ExceptionUtils;
@@ -19,6 +20,8 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 public class MetsGenerationHandler {
@@ -43,19 +46,24 @@ public class MetsGenerationHandler {
 
 
     private Template metTemplate;
-    private File rootDirectory;
     private File subFolder;
     private File targetRootLocation;
     private boolean isForced = false;
+//    private int startDate;
+//    private int endDate;
+    private PapersPastTitle papersPastTitle;
+    private boolean reprocess;
 
-    public MetsGenerationHandler(Template metTemplate, File rootDirectory, File subFolder, String targetRootLocation, boolean isForced) {
-//        String sipFolder = String.format("%s-%s", rootDirectory.getName(), subFolder.getName());
-        String sipFolder = rootDirectory.getName();
-        this.targetRootLocation = AJHRUtils.combinePath(targetRootLocation, sipFolder);
+    public MetsGenerationHandler(Template metTemplate, File subFolder, File targetRootLocation, boolean isForced,
+                                 PapersPastTitle papersPastTitle, boolean reprocess) {
         this.metTemplate = metTemplate;
-        this.rootDirectory = rootDirectory;
         this.subFolder = subFolder;
+        this.targetRootLocation = targetRootLocation;
         this.isForced = isForced;
+//        this.startDate = startDate;
+//        this.endDate = endDate;
+        this.papersPastTitle = papersPastTitle;
+        this.reprocess = reprocess;
     }
 
     public MetadataRetVal process() throws IOException, TemplateException, NoSuchAlgorithmException {
@@ -135,8 +143,26 @@ public class MetsGenerationHandler {
     }
 
     public String createMetsXmlAndCopyStreams() throws IOException, TemplateException, NoSuchAlgorithmException {
-        MetadataMetProp metProp = MetadataMetProp.getInstance(this.rootDirectory.getName(), this.subFolder.getName());
-        List<MetadataSipItem> pmList = handleFiles(metProp, this.subFolder, AJHRUtils.combinePath(this.targetRootLocation, PRESERVATION_MASTER_STREAM_FOLDER));
+        String issue = this.targetRootLocation.getName();
+        if (reprocess && issue.endsWith("_reprocess")) {
+            issue = issue.replaceAll("_reprocess$", "");
+        }
+
+        MetadataMetProp metProp = MetadataMetProp.getInstance(issue, this.papersPastTitle);
+
+        File[] children = this.subFolder.listFiles();
+        File PMFolder;
+
+        if (children == null || children.length == 0) {
+            System.out.println("Folder is empty.");
+            throw new IOException("The directory is empty: " + this.subFolder.getAbsolutePath());
+        }
+
+        if (children[0].isDirectory()) {
+            PMFolder =  AJHRUtils.combinePath(this.subFolder, "PM_01");
+        } else PMFolder = this.subFolder;
+
+        List<MetadataSipItem> pmList = handleFiles(metProp, PMFolder, AJHRUtils.combinePath(this.targetRootLocation, PRESERVATION_MASTER_STREAM_FOLDER));
 //        List<MetadataSipItem> mmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER), AJHRUtils.combinePath(this.targetRootLocation, MODIFIED_MASTER_STREAM_FOLDER));
 
         ModelMap model = new ModelMap();
@@ -159,21 +185,47 @@ public class MetsGenerationHandler {
             throw new IOException("The directory is empty: " + srcDirectory.getAbsolutePath());
         }
 
+        // Sort numerically by filename
+        Arrays.sort(files, Comparator.comparingInt(f -> {
+            String name = f.getName();
+
+            // Remove extension if any
+            int dotIndex = name.lastIndexOf('.');
+            if (dotIndex != -1) {
+                name = name.substring(0, dotIndex);
+            }
+
+            // If letters may exist after the number (e.g., 0004a), strip them
+            String numericPart = name.replaceAll("(\\d+).*", "$1");
+
+            return Integer.parseInt(numericPart);
+        }));
+
+        String firstFileName = files[0].getName();
+        int fileNum = extractNumeric(firstFileName);
+
+        String base = AJHRUtils.removeExtension(firstFileName);
+        String digits = base.replaceAll("(\\d+).*", "$1"); // take only leading digits
+        String trimmed = digits.replaceFirst("0+$", "");
+
+        boolean needsNormalization = digits.length() > 4 && trimmed.length() <= 4;
+
         int fileId = 1;
         for (File f : files) {
-            String fileName = f.getName();
-            String label = f.getName().replaceAll("(?<!^)[.].*", "");
-            MetsAtomicFileHandler fileAtomicHandler = new MetsAtomicFileHandler(f, new File(destDirectory, f.getName()));
-            boolean retVal = fileAtomicHandler.md5DigestAndCopy();
+            if (f.getName().toLowerCase().endsWith(".tif")) {
+                String fileName = AJHRUtils.correctFilename(f, fileId, needsNormalization);
+                String label = fileName.replaceAll("(?<!^)[.].*", "");
+                MetsAtomicFileHandler fileAtomicHandler = new MetsAtomicFileHandler(f, new File(destDirectory, fileName));
+                boolean retVal = fileAtomicHandler.md5DigestAndCopy();
 
-            MetadataSipItem item = new MetadataSipItem();
-            item.setFile(f);
-            item.setFileId(fileId++);
-            item.setFileOriginalName(fileName);
-            item.setFileEntityType(getFileEntityTypeFromExt(f.getName()));
-            item.setFileSize(Long.toString(f.length()));
-            item.setFixityValue(fileAtomicHandler.getDigestString());
-            item.setLabel(label);
+                MetadataSipItem item = new MetadataSipItem();
+                item.setFile(f);
+                item.setFileId(fileId++);
+                item.setFileOriginalName(fileName);
+                item.setFileEntityType(getFileEntityTypeFromExt(f.getName()));
+                item.setFileSize(Long.toString(f.length()));
+                item.setFixityValue(fileAtomicHandler.getDigestString());
+                item.setLabel(label);
 
 
 //            if (fileName.toLowerCase().startsWith(metProp.getAccrualPeriodicity().toLowerCase())) {
@@ -181,7 +233,8 @@ public class MetsGenerationHandler {
 //            } else {
 //                item.setLabel(fileName);
 //            }
-            list.add(item);
+                list.add(item);
+            }
         }
         return list;
     }
@@ -198,6 +251,11 @@ public class MetsGenerationHandler {
             return "ALTO";
         }
         return "Unknown";
+    }
+
+    private static int extractNumeric(String name) {
+        String numericPart = name.replaceAll("^(\\d+).*", "$1");
+        return Integer.parseInt(numericPart);
     }
 
     public String digest(File f) {
@@ -227,13 +285,13 @@ public class MetsGenerationHandler {
         this.metTemplate = metTemplate;
     }
 
-    public File getRootDirectory() {
-        return rootDirectory;
-    }
-
-    public void setRootDirectory(File rootDirectory) {
-        this.rootDirectory = rootDirectory;
-    }
+//    public File getRootDirectory() {
+//        return rootDirectory;
+//    }
+//
+//    public void setRootDirectory(File rootDirectory) {
+//        this.rootDirectory = rootDirectory;
+//    }
 
     public File getSubFolder() {
         return subFolder;
@@ -258,4 +316,6 @@ public class MetsGenerationHandler {
     public void setForced(boolean forced) {
         isForced = forced;
     }
+
+
 }

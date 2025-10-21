@@ -4,6 +4,7 @@ import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import nz.govt.natlib.ajhr.metadata.MetadataMetProp;
 import nz.govt.natlib.ajhr.metadata.MetadataSipItem;
+import nz.govt.natlib.ajhr.metadata.PapersPastTitle;
 import nz.govt.natlib.ajhr.util.AJHRUtils;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.BeforeAll;
@@ -15,7 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public class MetsGenerationHandlerTests {
-    private static final String ROOT_FOLDER = "/home/jeremy/workspace/testdata";
+    private static final String ROOT_FOLDER = "/mnt/e/testdata/PP-test";
     private static MetsGenerationHandler testInstance;
 
     @BeforeAll
@@ -23,10 +24,13 @@ public class MetsGenerationHandlerTests {
         MetsTemplateService metsTemplateService = new MetsTemplateService();
         Template template = metsTemplateService.loadTemplate();
 
-        File rootFolder = new File(ROOT_FOLDER, "TDN/1955/TDN_19550113");
-        File subFolder = new File(ROOT_FOLDER, "TDN/1955/TDN_19550113/PM_01");
-        String targetFolder = new File(ROOT_FOLDER, "TDN_TEST").getAbsolutePath();
-        testInstance = new MetsGenerationHandler(template, rootFolder, subFolder, targetFolder, false);
+//        File rootFolder = new File(ROOT_FOLDER, "ALG/1862/ALG_18620614");
+        File subFolder = new File(ROOT_FOLDER, "ALG/1862/ALG_18620614/");
+        File targetFolder = new File(ROOT_FOLDER, "test-out/ALG_18620614/");
+        PapersPastTitle papersPastTitle = new PapersPastTitle("ALG", "Albertland Gazette", "123",
+                "test", 0, 0);
+        testInstance = new MetsGenerationHandler(template, subFolder, targetFolder, false,
+        papersPastTitle, false);
     }
 
     @Test

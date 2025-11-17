@@ -16,7 +16,7 @@ import java.security.NoSuchAlgorithmException;
 import java.util.List;
 
 public class MetsGenerationHandlerTests {
-    private static final String ROOT_FOLDER = "/mnt/e/testdata/PP-test";
+    private static final String ROOT_FOLDER = "/mnt/d/testdata/PP-test";
     private static MetsGenerationHandler testInstance;
 
     @BeforeAll

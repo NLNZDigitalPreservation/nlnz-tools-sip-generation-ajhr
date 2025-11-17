@@ -10,7 +10,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class MetsFolderScanProcessorTests {
-    private static final String ROOT_FOLDER = "/mnt/e/testdata/PP-test";
+    private static final String ROOT_FOLDER = "/mnt/d/testdata/PP-test";
     private static MetsFolderScanProcessor processor;
 
     @BeforeAll
@@ -21,7 +21,7 @@ public class MetsFolderScanProcessorTests {
         ReflectionTestUtils.setField(processor, "destDir", new File(ROOT_FOLDER, "test-out").getAbsolutePath());
 //        ReflectionTestUtils.setField(processor, "startDate", 19210101);
 //        ReflectionTestUtils.setField(processor, "endDate", 19210103);
-        ReflectionTestUtils.setField(processor, "spreadsheet", "/mnt/e/testdata/PP-reload-test.xlsx");
+        ReflectionTestUtils.setField(processor, "spreadsheet", "/mnt/d/testdata/PP-reload-test.xlsx");
         ReflectionTestUtils.setField(processor, "isForcedReplaced", true);
         ReflectionTestUtils.setField(processor, "metsTemplateService", new MetsTemplateService());
         PapersPastTitle papersPastTitle = new PapersPastTitle("ALG", "Albertland Gazette", "9914834303502836",
@@ -31,7 +31,7 @@ public class MetsFolderScanProcessorTests {
     }
 
     @Test
-    public void testIsValidFolder() {
+    public void testIsValidFolder() throws IOException {
         {
             File folder = new File(ROOT_FOLDER, "ALG/1862/ALG_18620614");
             String retVal = processor.getValidSubFolder(folder);

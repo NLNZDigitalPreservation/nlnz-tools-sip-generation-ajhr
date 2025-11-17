@@ -201,8 +201,7 @@ public class MetsGenerationHandler {
             return Integer.parseInt(numericPart);
         }));
 
-        String firstFileName = files[0].getName();
-        int fileNum = extractNumeric(firstFileName);
+        String firstFileName = files[1].getName();
 
         String base = AJHRUtils.removeExtension(firstFileName);
         String digits = base.replaceAll("(\\d+).*", "$1"); // take only leading digits
@@ -212,6 +211,9 @@ public class MetsGenerationHandler {
 
         int fileId = 1;
         for (File f : files) {
+            if (needsNormalization && f.length() < 10 * 1024) {
+                continue; // skip this file
+            }
             if (f.getName().toLowerCase().endsWith(".tif")) {
                 String fileName = AJHRUtils.correctFilename(f, fileId, needsNormalization);
                 String label = fileName.replaceAll("(?<!^)[.].*", "");

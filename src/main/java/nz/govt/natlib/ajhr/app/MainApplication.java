@@ -51,6 +51,7 @@ public class MainApplication implements CommandLineRunner {
             processor.setForcedReplaced(Boolean.parseBoolean(properties.getProperty("forceReplace")));
             processor.setMaxThreads(Integer.parseInt(properties.getProperty("maxThreads")));
             processor.setReprocess(Boolean.parseBoolean(properties.getProperty("reprocess")));
+            processor.setPickups(properties.getProperty("pickups"));
 //            processor.setSheetNumber(Integer.parseInt(properties.getProperty("sheetNumber")));
             processor.init();
             processor.processSpreadsheet();
@@ -105,6 +106,19 @@ public class MainApplication implements CommandLineRunner {
         } else {
             try {
                 Boolean.parseBoolean(properties.getProperty("reprocess"));
+            } catch (Exception e) {
+                PrettyPrinter.error("Invalid arguments");
+                printUsage();
+                return false;
+            }
+        }
+
+        if (!properties.containsKey("pickups")) {
+            properties.put("pickups", "");
+            PrettyPrinter.info("--pickups={}", properties.getProperty("pickups"));
+        } else {
+            try {
+                properties.getProperty("pickups");
             } catch (Exception e) {
                 PrettyPrinter.error("Invalid arguments");
                 printUsage();

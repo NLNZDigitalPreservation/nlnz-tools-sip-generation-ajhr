@@ -20,6 +20,9 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.Semaphore;
@@ -33,6 +36,7 @@ public class MetsFolderScanProcessor {
     private int sheetNumber;
     private String destDir;
     private boolean reprocess;
+    private String pickups;
 //    private int startDate;
 //    private int endDate;
     private boolean isForcedReplaced;
@@ -270,7 +274,7 @@ public class MetsFolderScanProcessor {
 //       return pmFolder.exists() && pmFolder.isDirectory() && mmFolder.exists() && mmFolder.isDirectory();
 //    }
 
-    public String getValidSubFolder(File directory) {
+    public String getValidSubFolder(File directory) throws IOException {
         String current = directory.getName();
 
         // Case 1: Folder has style CODE_DATE (using MetadataMetProp)
@@ -279,9 +283,21 @@ public class MetsFolderScanProcessor {
             String dateStr = metProp.getDate();
             if (isInteger(dateStr)) {
                 int directoryDate = Integer.parseInt(dateStr);
+
                 if (this.papersPastTitle.startDate() != 0 && this.papersPastTitle.endDate() != 0) {
                     if (directoryDate >= this.papersPastTitle.startDate() &&
                             directoryDate <= this.papersPastTitle.endDate()) {
+                        if (!Objects.equals(pickups, "") && pickups != null) {
+                            Path pickupsFile = Paths.get(pickups);
+
+                            try (var lines = Files.lines(Paths.get(pickupsFile.toUri()))) {
+                                boolean exists = lines.anyMatch(line -> line.contains(current));
+                                return exists ? current : null;
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                                return null;
+                            }
+                        }
                         return current;
                     } else {
                         return null;
@@ -434,5 +450,13 @@ public class MetsFolderScanProcessor {
 
     public void setReprocess(boolean reprocess) {
         this.reprocess = reprocess;
+    }
+
+    public String getPickups() {
+        return pickups;
+    }
+
+    public void setPickups(String pickups) {
+        this.pickups = pickups;
     }
 }

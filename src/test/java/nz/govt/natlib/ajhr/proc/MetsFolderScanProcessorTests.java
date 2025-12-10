@@ -9,7 +9,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class MetsFolderScanProcessorTests {
-    private static final String ROOT_FOLDER = "/mnt/e/testdata";
+    private static final String ROOT_FOLDER = "/mnt/d/testdata";
     private static MetsFolderScanProcessor processor;
 
     @BeforeAll

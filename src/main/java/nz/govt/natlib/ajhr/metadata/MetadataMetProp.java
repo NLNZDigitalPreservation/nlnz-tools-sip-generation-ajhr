@@ -7,7 +7,7 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 
 public class MetadataMetProp {
-    private static final String[] TITLE_LIST = {"MEX"};
+    private static final String[] TITLE_LIST = {"MEX", "RUBUL", "WAIBUL"};
     private String title;
     private String year;
     private String month;

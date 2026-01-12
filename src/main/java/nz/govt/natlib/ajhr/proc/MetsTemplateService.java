@@ -19,7 +19,7 @@ public class MetsTemplateService {
     private static final Logger log = LoggerFactory.getLogger(MetsTemplateService.class);
 
     private static final String ROOT_DIR_TEMPLATE = ".";
-    private static final String NAME_DEFAULT_TEMPLATE = "mets-template-rubul.xml";
+    private static final String NAME_DEFAULT_TEMPLATE = "mets-template-waibul.xml";
 
     public Configuration initConfiguration() throws IOException {
         // Create your Configuration instance, and specify if up to what FreeMarker

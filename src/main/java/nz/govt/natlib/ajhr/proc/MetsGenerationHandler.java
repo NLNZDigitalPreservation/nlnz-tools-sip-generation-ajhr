@@ -198,6 +198,11 @@ public class MetsGenerationHandler {
             // If letters may exist after the number (e.g., 0004a), strip them
             String numericPart = name.replaceAll("(\\d+).*", "$1");
 
+            // If no digits, push to end
+            if (numericPart.isEmpty() || !numericPart.matches("\\d+")) {
+                return Integer.MAX_VALUE;
+            }
+
             return Integer.parseInt(numericPart);
         }));
 

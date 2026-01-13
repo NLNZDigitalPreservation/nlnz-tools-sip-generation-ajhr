@@ -184,9 +184,16 @@ public class MetsFolderScanProcessor {
         if (!directory.isDirectory()) {
             return;
         }
+        int startYear = 1700;
+        int endYear = 2100;
+
+        if (this.papersPastTitle.startDate() != 0 && this.papersPastTitle.endDate() != 0) {
+            startYear = Integer.parseInt(String.valueOf(this.papersPastTitle.startDate()).substring(0, 4));
+            endYear = Integer.parseInt(String.valueOf(this.papersPastTitle.endDate()).substring(0, 4));
+        }
 
         if (directory.getName().matches("\\d+")) {
-            if (Integer.parseInt(directory.getName()) > 1700 && Integer.parseInt(directory.getName()) < 2100) {
+            if (Integer.parseInt(directory.getName()) >= startYear && Integer.parseInt(directory.getName()) <= endYear) {
                 log.debug("Found valid root directory: {}", directory.getAbsolutePath());
                 File[] children = directory.listFiles(File::isDirectory);
                 if (children == null || children.length == 0) {
@@ -198,6 +205,8 @@ public class MetsFolderScanProcessor {
                 }
             } else if (Integer.parseInt(directory.getName()) > 0 && Integer.parseInt(directory.getName()) < 13) {
                 _processSpreadsheet(directory);
+                return;
+            } else {
                 return;
             }
         }

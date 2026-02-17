@@ -23,8 +23,8 @@ public class MetsFolderScanProcessor {
     private int maxThreads = 1;
     private String srcDir;
     private String destDir;
-    private int startDate;
-    private int endDate;
+//    private int startDate;
+//    private int endDate;
     private boolean isForcedReplaced;
     @Autowired
     private MetsTemplateService metsTemplateService;
@@ -64,30 +64,30 @@ public class MetsFolderScanProcessor {
                 return;
             }
         }
-        _walkSourceFolder(new File(srcDir));
+        listAccrualFolders(new File(srcDir));
 
         semaphore.acquire(maxThreads);
     }
 
-    private void _walkSourceFolder(File directory) throws InterruptedException {
-        if (!directory.isDirectory()) {
-            return;
-        }
-
-        if (isValidRootFolder(directory)) {
-            log.debug("Found valid root directory: {}", directory.getAbsolutePath());
-            listAccrualFolders(directory);
-        }
-
-        File[] subFolders = directory.listFiles();
-        if (subFolders == null) {
-            log.error("The root directory is empty: {}", directory.getAbsolutePath());
-            return;
-        }
-        for (File subFolder : subFolders) {
-            _walkSourceFolder(subFolder);
-        }
-    }
+//    private void _walkSourceFolder(File directory) throws InterruptedException {
+//        if (!directory.isDirectory()) {
+//            return;
+//        }
+//
+//        if (isValidRootFolder(directory)) {
+//            log.debug("Found valid root directory: {}", directory.getAbsolutePath());
+//            listAccrualFolders(directory);
+//        }
+//
+//        File[] subFolders = directory.listFiles();
+//        if (subFolders == null) {
+//            log.error("The root directory is empty: {}", directory.getAbsolutePath());
+//            return;
+//        }
+//        for (File subFolder : subFolders) {
+//            _walkSourceFolder(subFolder);
+//        }
+//    }
 
     private void listAccrualFolders(File directory) throws InterruptedException {
         File[] subFolders = directory.listFiles();
@@ -95,14 +95,14 @@ public class MetsFolderScanProcessor {
             return;
         }
         for (File subFolder : subFolders) {
-//            if (!subFolder.isDirectory() || !isValidSubFolder(subFolder)) {
-//                log.error("Skipped invalid subfolder: {}", subFolder.getAbsolutePath());
-//                continue;
-//            }
-            if (!subFolder.isDirectory() || !subFolder.getName().endsWith(MetsGenerationHandler.PRESERVATION_MASTER_FOLDER)) {
+            if (!subFolder.isDirectory() || !isValidSubFolder(subFolder)) {
                 log.error("Skipped invalid subfolder: {}", subFolder.getAbsolutePath());
                 continue;
             }
+//            if (!subFolder.isDirectory() || !subFolder.getName().endsWith(MetsGenerationHandler.PRESERVATION_MASTER_FOLDER)) {
+//                log.error("Skipped invalid subfolder: {}", subFolder.getAbsolutePath());
+//                continue;
+//            }
 
             //Try to get a token to prevent the concurrent threads not exceed the capacity threshold.
             semaphore.acquire();
@@ -135,20 +135,19 @@ public class MetsFolderScanProcessor {
         }
     }
 
-    public boolean isValidSubFolder(File directory) {
-       File pmFolder = new File(directory, MetsGenerationHandler.PRESERVATION_MASTER_FOLDER);
-       File mmFolder = new File(directory, MetsGenerationHandler.MODIFIED_MASTER_FOLDER);
+//    public boolean isValidSubFolder(File directory) {
+//       File pmFolder = new File(directory, MetsGenerationHandler.PRESERVATION_MASTER_FOLDER);
+//       File mmFolder = new File(directory, MetsGenerationHandler.MODIFIED_MASTER_FOLDER);
+//
+//        return pmFolder.exists() && pmFolder.isDirectory() && mmFolder.exists() && mmFolder.isDirectory();
+//    }
 
-        return pmFolder.exists() && pmFolder.isDirectory() && mmFolder.exists() && mmFolder.isDirectory();
+    public boolean isValidRootFolder(File dir) {
+        return false;
     }
 
-    public boolean isValidRootFolder(File directory) {
-        MetadataMetProp metProp = MetadataMetProp.getInstance(directory.getName(), "");
-        if (metProp != null) {
-            int directoryDate = Integer.parseInt(metProp.getDate());
-            return directoryDate >= startDate && directoryDate <= endDate;
-        }
-        return false;
+    public boolean isValidSubFolder(File directory) {
+        return directory.getName().startsWith("IRN");
     }
 
     public int getMaxThreads() {
@@ -175,21 +174,21 @@ public class MetsFolderScanProcessor {
         this.destDir = destDir;
     }
 
-    public int getStartDate() {
-        return startDate;
-    }
-
-    public void setStartDate(int startDate) {
-        this.startDate = startDate;
-    }
-
-    public int getEndDate() {
-        return endDate;
-    }
-
-    public void setEndDate(int endDate) {
-        this.endDate = endDate;
-    }
+//    public int getStartDate() {
+//        return startDate;
+//    }
+//
+//    public void setStartDate(int startDate) {
+//        this.startDate = startDate;
+//    }
+//
+//    public int getEndDate() {
+//        return endDate;
+//    }
+//
+//    public void setEndDate(int endDate) {
+//        this.endDate = endDate;
+//    }
 
     public boolean isForcedReplaced() {
         return isForcedReplaced;

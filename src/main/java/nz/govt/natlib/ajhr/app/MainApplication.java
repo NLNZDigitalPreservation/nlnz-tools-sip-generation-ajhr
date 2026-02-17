@@ -45,8 +45,8 @@ public class MainApplication implements CommandLineRunner {
             PrettyPrinter.info("Succeed to parse arguments");
             processor.setSrcDir(properties.getProperty("srcDir"));
             processor.setDestDir(properties.getProperty("destDir"));
-            processor.setStartDate(Integer.parseInt(properties.getProperty("startDate")));
-            processor.setEndDate(Integer.parseInt(properties.getProperty("endDate")));
+//            processor.setStartDate(Integer.parseInt(properties.getProperty("startDate")));
+//            processor.setEndDate(Integer.parseInt(properties.getProperty("endDate")));
             processor.setForcedReplaced(Boolean.parseBoolean(properties.getProperty("forceReplace")));
             processor.setMaxThreads(Integer.parseInt(properties.getProperty("maxThreads")));
             processor.init();
@@ -114,23 +114,23 @@ public class MainApplication implements CommandLineRunner {
             }
         }
 
-        if (!properties.containsKey("startDate")) {
-            properties.put("startDate", "19540101");
-            PrettyPrinter.info("--startDate={}", properties.getProperty("startDate"));
-        } else if (!AJHRUtils.isValidDate(properties.getProperty("startDate"))) {
-            PrettyPrinter.error("Invalid arguments");
-            printUsage();
-            return false;
-        }
-
-        if (!properties.containsKey("endDate")) {
-            properties.put("endDate", "19751231");
-            PrettyPrinter.info("--endDate={}", properties.getProperty("endDate"));
-        } else if (!AJHRUtils.isValidDate(properties.getProperty("endDate"))) {
-            PrettyPrinter.error("Invalid arguments");
-            printUsage();
-            return false;
-        }
+//        if (!properties.containsKey("startDate")) {
+//            properties.put("startDate", "19540101");
+//            PrettyPrinter.info("--startDate={}", properties.getProperty("startDate"));
+//        } else if (!AJHRUtils.isValidDate(properties.getProperty("startDate"))) {
+//            PrettyPrinter.error("Invalid arguments");
+//            printUsage();
+//            return false;
+//        }
+//
+//        if (!properties.containsKey("endDate")) {
+//            properties.put("endDate", "19751231");
+//            PrettyPrinter.info("--endDate={}", properties.getProperty("endDate"));
+//        } else if (!AJHRUtils.isValidDate(properties.getProperty("endDate"))) {
+//            PrettyPrinter.error("Invalid arguments");
+//            printUsage();
+//            return false;
+//        }
 
         return true;
     }

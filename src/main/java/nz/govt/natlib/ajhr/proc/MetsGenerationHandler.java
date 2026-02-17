@@ -19,6 +19,7 @@ import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class MetsGenerationHandler {
@@ -29,7 +30,7 @@ public class MetsGenerationHandler {
     public static final String READY_FOR_INGESTION_MARK = "ready-for-permissions";
     private static final String STREAM_FOLDER = "content" + File.separator + "streams";
     private static final String PRESERVATION_MASTER_STREAM_FOLDER = STREAM_FOLDER + File.separator + PRESERVATION_MASTER_FOLDER;
-//    private static final String MODIFIED_MASTER_STREAM_FOLDER = STREAM_FOLDER + File.separator + MODIFIED_MASTER_FOLDER;
+    private static final String MODIFIED_MASTER_STREAM_FOLDER = STREAM_FOLDER + File.separator + MODIFIED_MASTER_FOLDER;
 
     private static DigestUtils _digester = null;
 
@@ -50,7 +51,7 @@ public class MetsGenerationHandler {
 
     public MetsGenerationHandler(Template metTemplate, File rootDirectory, File subFolder, String targetRootLocation, boolean isForced) {
 //        String sipFolder = String.format("%s-%s", rootDirectory.getName(), subFolder.getName());
-        String sipFolder = rootDirectory.getName();
+        String sipFolder = subFolder.getName();
         this.targetRootLocation = AJHRUtils.combinePath(targetRootLocation, sipFolder);
         this.metTemplate = metTemplate;
         this.rootDirectory = rootDirectory;
@@ -135,14 +136,30 @@ public class MetsGenerationHandler {
     }
 
     public String createMetsXmlAndCopyStreams() throws IOException, TemplateException, NoSuchAlgorithmException {
-        MetadataMetProp metProp = MetadataMetProp.getInstance(this.rootDirectory.getName(), this.subFolder.getName());
-        List<MetadataSipItem> pmList = handleFiles(metProp, this.subFolder, AJHRUtils.combinePath(this.targetRootLocation, PRESERVATION_MASTER_STREAM_FOLDER));
-//        List<MetadataSipItem> mmList = handleFiles(metProp, AJHRUtils.combinePath(this.subFolder, MODIFIED_MASTER_FOLDER), AJHRUtils.combinePath(this.targetRootLocation, MODIFIED_MASTER_STREAM_FOLDER));
+        MetadataMetProp metProp = MetadataMetProp.getInstance(this.subFolder.getName());
+        File[] files = this.subFolder.listFiles();
+
+        List<File> pmFiles = files == null
+                ? List.of()
+                : Arrays.stream(files)
+                    .filter(File::isFile)
+                    .filter(f -> baseNameEndsWith(f, "_pm"))
+                    .toList();
+
+        List<File> mmFiles = files == null
+                ? List.of()
+                : Arrays.stream(files)
+                    .filter(File::isFile)
+                    .filter(f -> baseNameEndsWith(f, "_mm"))
+                    .toList();
+
+        List<MetadataSipItem> pmList = handleFiles(metProp, pmFiles, AJHRUtils.combinePath(this.targetRootLocation, PRESERVATION_MASTER_STREAM_FOLDER));
+        List<MetadataSipItem> mmList = handleFiles(metProp, mmFiles, AJHRUtils.combinePath(this.targetRootLocation, MODIFIED_MASTER_STREAM_FOLDER));
 
         ModelMap model = new ModelMap();
         model.addAttribute("metProp", metProp);
         model.addAttribute("pmList", pmList);
-//        model.addAttribute("mmList", mmList);
+        model.addAttribute("mmList", mmList);
 
         StringWriter writer = new StringWriter();
 
@@ -150,13 +167,13 @@ public class MetsGenerationHandler {
         return writer.toString();
     }
 
-    public List<MetadataSipItem> handleFiles(MetadataMetProp metProp, File srcDirectory, File destDirectory) throws IOException, NoSuchAlgorithmException {
+    public List<MetadataSipItem> handleFiles(MetadataMetProp metProp, List<File> files, File destDirectory) throws IOException, NoSuchAlgorithmException {
         List<MetadataSipItem> list = new ArrayList<>();
 
-        File[] files = srcDirectory.listFiles();
+//        File[] files = srcDirectory.listFiles();
         if (files == null) {
-            log.error("The directory is empty: {}", srcDirectory.getAbsolutePath());
-            throw new IOException("The directory is empty: " + srcDirectory.getAbsolutePath());
+            log.error("The directory is empty: {}");
+            throw new IOException("The directory is empty: ");
         }
 
         int fileId = 1;
@@ -184,6 +201,13 @@ public class MetsGenerationHandler {
             list.add(item);
         }
         return list;
+    }
+
+    static boolean baseNameEndsWith(File f, String suffix) {
+        String name = f.getName();
+        int dot = name.lastIndexOf('.');
+        String baseName = (dot == -1) ? name : name.substring(0, dot);
+        return baseName.endsWith(suffix);
     }
 
     public String getFileEntityTypeFromExt(String fileName) {

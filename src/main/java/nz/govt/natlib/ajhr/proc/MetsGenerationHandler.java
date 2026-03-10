@@ -206,8 +206,29 @@ public class MetsGenerationHandler {
             return Integer.parseInt(numericPart);
         }));
 
-        String firstFileName = files[1].getName();
+        List<File> pageFiles = new ArrayList<>(files.length);
+        boolean atStart = true;
 
+
+        for (File f : files) {
+            if (atStart) {
+                if (f.length() < 15 * 1024) {
+                    log.debug("Skipping initial small cover: {} ({} bytes)", f.getName(), f.length());
+                    // Don't add; continue trying to find the first real file
+                    continue;
+                }
+            }
+
+            atStart = false;
+            pageFiles.add(f);
+        }
+
+        if (pageFiles.isEmpty()) {
+            throw new IOException("No valid page files to process in: " + srcDirectory.getAbsolutePath());
+        }
+
+//        String firstFileName = files[1].getName();
+        String firstFileName = pageFiles.get(0).getName();
         String base = AJHRUtils.removeExtension(firstFileName);
         String digits = base.replaceAll("(\\d+).*", "$1"); // take only leading digits
         String trimmed = digits.replaceFirst("0+$", "");
@@ -215,8 +236,8 @@ public class MetsGenerationHandler {
         boolean needsNormalization = digits.length() > 4 && trimmed.length() <= 4;
 
         int fileId = 1;
-        for (File f : files) {
-            if (needsNormalization && f.length() < 10 * 1024) {
+        for (File f : pageFiles) {
+            if (needsNormalization && f.length() < 15 * 1024) {
                 continue; // skip this file
             }
             if (f.getName().toLowerCase().endsWith(".tif")) {

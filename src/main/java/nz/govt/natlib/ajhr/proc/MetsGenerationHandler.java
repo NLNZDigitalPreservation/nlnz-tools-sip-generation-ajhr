@@ -13,8 +13,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ui.ModelMap;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -59,7 +62,7 @@ public class MetsGenerationHandler {
         this.isForced = isForced;
     }
 
-    public MetadataRetVal process() throws IOException, TemplateException, NoSuchAlgorithmException {
+    public MetadataRetVal process() throws IOException, TemplateException, NoSuchAlgorithmException, URISyntaxException, ParserConfigurationException, SAXException {
         File readyForIngestionMarkFile = AJHRUtils.combinePath(targetRootLocation, READY_FOR_INGESTION_MARK);
         if (readyForIngestionMarkFile.exists() && !isForced) {
             log.info("Skip {}", subFolder.getAbsolutePath());
@@ -135,7 +138,7 @@ public class MetsGenerationHandler {
         return retVal;
     }
 
-    public String createMetsXmlAndCopyStreams() throws IOException, TemplateException, NoSuchAlgorithmException {
+    public String createMetsXmlAndCopyStreams() throws IOException, TemplateException, NoSuchAlgorithmException, URISyntaxException, ParserConfigurationException, SAXException {
         MetadataMetProp metProp = MetadataMetProp.getInstance(this.subFolder.getName());
         File[] files = this.subFolder.listFiles();
 

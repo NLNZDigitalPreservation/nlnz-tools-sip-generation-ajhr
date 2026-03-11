@@ -10,10 +10,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.xml.sax.SAXException;
 
 //import javax.annotation.PostConstruct;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.Semaphore;
 
@@ -120,8 +123,11 @@ public class MetsFolderScanProcessor {
                                 log.debug("Found valid subfolder: {}", subFolder.getAbsolutePath());
                                 MetsGenerationHandler generationProcessor = new MetsGenerationHandler(metsTemplate, directory, subFolder, destDir, isForcedReplaced);
                                 retVal = generationProcessor.process();
-                            } catch (TemplateException | IOException | NoSuchAlgorithmException e) {
+                            } catch (TemplateException | IOException | NoSuchAlgorithmException |
+                                     ParserConfigurationException | SAXException e) {
                                 log.error("Failed to generate SIP for: {}", subFolder.getAbsolutePath(), e);
+                            } catch (URISyntaxException e) {
+                                throw new RuntimeException(e);
                             }
                         }
 

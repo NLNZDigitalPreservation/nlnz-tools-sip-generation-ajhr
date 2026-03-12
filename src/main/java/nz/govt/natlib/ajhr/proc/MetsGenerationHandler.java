@@ -212,7 +212,7 @@ public class MetsGenerationHandler {
 
         for (File f : files) {
             if (atStart) {
-                if (f.length() < 15 * 1024) {
+                if (f.length() < 15 * 1024 && !f.getName().toLowerCase().endsWith("m.tif")) {
                     log.debug("Skipping initial small cover: {} ({} bytes)", f.getName(), f.length());
                     // Don't add; continue trying to find the first real file
                     continue;
@@ -237,7 +237,7 @@ public class MetsGenerationHandler {
 
         int fileId = 1;
         for (File f : pageFiles) {
-            if (needsNormalization && f.length() < 15 * 1024) {
+            if (needsNormalization && f.length() < 15 * 1024 && !f.getName().toLowerCase().endsWith("m.tif")) {
                 continue; // skip this file
             }
             if (f.getName().toLowerCase().endsWith(".tif")) {
